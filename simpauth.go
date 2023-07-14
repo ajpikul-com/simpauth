@@ -1,6 +1,9 @@
 package simpauth
 
 import (
+	"github.com/pkg/errors"
+	"net/http"
+
 	"github.com/ajpikul-com/ilog"
 )
 
@@ -17,5 +20,15 @@ func SetDefaultLogger(newLogger ilog.LoggerInterface) {
 	defaultLogger.Info("Default Logger Set")
 }
 
-func main() {
+type Bouncer struct {
+	base http.Handler
+}
+
+func (h *Bouncer) Init(handler http.Handler) error {
+	h.base = handler
+	return nil
+}
+
+func (h *Bouncer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	h.base.ServeHTTP(w, r)
 }
