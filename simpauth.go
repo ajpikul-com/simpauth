@@ -1,8 +1,9 @@
 package simpauth
 
 import (
-	"github.com/pkg/errors"
 	"net/http"
+
+	// "github.com/pkg/errors"
 
 	"github.com/ajpikul-com/ilog"
 )
