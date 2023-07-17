@@ -1,7 +1,6 @@
 package googlelogin
 
 import (
-	"context"
 	"net/http"
 
 	"google.golang.org/api/oauth2/v2"
@@ -45,8 +44,7 @@ func (g *GoogleLogin) VerifyCredentials(w http.ResponseWriter, r *http.Request) 
 			defaultLogger.Info("Under attack? csrf tokens didn't match")
 			return uwho.UNKNOWN, nil // BAD! Not Verified Should probably block this user
 		}
-		ctx := context.Background() // TODO What context should it be
-		service, err := oauth2.NewService(ctx)
+		service, err := oauth2.NewService(r.Context())
 		if err != nil {
 			defaultLogger.Error(err.Error())
 			return uwho.UNKNOWN, nil // Not validated!
