@@ -38,7 +38,7 @@ func (c *coordinator) CallHooks(hooks []Hook, w http.ResponseWriter, r *http.Req
 }
 
 // TODO, this is going to change with refactor, since now we take a factory
-func New(desiredResource, loginResult, accessDenied, logoutResult, expiredResult http.Handler,
+func New(desiredResource, loginResult, accessDenied, logoutResult http.Handler,
 	loginEndpoint, logoutEndpoint string,
 	factory Factory) coordinator {
 
@@ -53,7 +53,6 @@ func New(desiredResource, loginResult, accessDenied, logoutResult, expiredResult
 		loginResult:     loginResult,
 		accessDenied:    accessDenied,
 		logoutResult:    logoutResult,
-		expiredResult:   expiredResult,
 		loginEndpoint:   loginEndpointParsed,
 		logoutEndpoint:  logoutEndpointParsed,
 		stateFactory:    factory,

@@ -19,8 +19,6 @@ func (u *UserStatus) StatusStr() string {
 		return "UNKNOWN"
 	case KNOWN:
 		return "KNOWN"
-	case EXPIRED:
-		return "EXPIRED"
 	case AUTHORIZED:
 		return "AUTHORIZED"
 	case SPOKEN:

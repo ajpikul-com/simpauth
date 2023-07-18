@@ -46,18 +46,20 @@ func New() *CookieSessionManager {
 	}
 }
 
-func (c *CookieSessionManager) NewSession(http.ResponseWriter, *http.Request) {
-	// No prep todo with new session, we can just update session
+func (c *CookieSessionManager) NewSession(userStateCoord uwho.ReqByCoord, w http.ResponseWriter, r *http.Request) {
+	// No prep todo with new session, we can just update session, at least on this implementation
 }
 
 func (c *CookieSessionManager) ReadSession(userStateCoord uwho.ReqByCoord, w http.ResponseWriter, r *http.Request) uwho.UserStatus {
 	cookie, err := r.Cookie(c.id.String())
 	if err == http.ErrNoCookie {
+		c.EndSession(userStateCoord, w, r)
 		return uwho.UNKNOWN
 	} else if err == nil {
 		dataBits, err := base64.StdEncoding.DecodeString(cookie.Value)
 		if err != nil {
 			defaultLogger.Error(err.Error())
+			c.EndSession(userStateCoord, w, r)
 			return uwho.UNKNOWN
 		}
 		data := string(dataBits[:])
@@ -65,14 +67,18 @@ func (c *CookieSessionManager) ReadSession(userStateCoord uwho.ReqByCoord, w htt
 		if userState, ok := userStateCoord.(ReqBySess); ok {
 			ok = userState.SessionToState(data)
 			if !ok {
+				c.EndSession(userStateCoord, w, r)
 				return uwho.UNKNOWN
 			}
 		} else {
+			c.EndSession(userStateCoord, w, r)
 			return uwho.UNKNOWN
 		}
+		// THIS IS THE ONLY SUCCESS RETURN
 		return uwho.KNOWN
 	} else {
 		defaultLogger.Error(err.Error())
+		c.EndSession(userStateCoord, w, r)
 		return uwho.UNKNOWN
 	}
 }
@@ -87,13 +93,11 @@ func (c *CookieSessionManager) UpdateSession(userStateCoord uwho.ReqByCoord, w h
 	}
 }
 
-func (c *CookieSessionManager) EndSession(w http.ResponseWriter, r *http.Request) {
+func (c *CookieSessionManager) EndSession(userStateCoord uwho.ReqByCoord, w http.ResponseWriter, r *http.Request) {
 	http.SetCookie(w, &http.Cookie{
 		Name:   c.id.String(),
 		Value:  "",
 		MaxAge: -1,
-		Path:   "/", // Maybe we should be setting this when we initialize it? Not sure how it really effects behavior
+		Path:   "/",
 	})
 }
-
-// TODO NEED A WAY TO LOGOUT, OR DELETE COOKIES, WHICH WE CALL IF WE'RE EXPIRED!

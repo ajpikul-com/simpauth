@@ -22,13 +22,14 @@ type Identifier interface {
 }
 
 var ErrSessionExists error = errors.New("Session already exist")
+var ErrStateExists error = errors.New("State already exist")
 
 type SessionManager interface {
 	Module
-	NewSession(http.ResponseWriter, *http.Request)
+	NewSession(ReqByCoord, http.ResponseWriter, *http.Request)
 	ReadSession(ReqByCoord, http.ResponseWriter, *http.Request) UserStatus // The return here is effectively an error
 	UpdateSession(ReqByCoord, http.ResponseWriter, *http.Request)
-	EndSession(http.ResponseWriter, *http.Request)
+	EndSession(ReqByCoord, http.ResponseWriter, *http.Request)
 }
 
 // INTERFACES THAT MUST BE SATISFIED BY USER-DEVELOPER IN THEIR STATE MANAGER

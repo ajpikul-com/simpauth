@@ -63,6 +63,11 @@ func (g *GoogleLogin) VerifyCredentials(userStateCoord uwho.ReqByCoord, w http.R
 	return uwho.UNKNOWN
 }
 
+func (g *GoogleLogin) GoHome(w http.ResponseWriter, r *http.Request) {
+	defaultLogger.Info("Redirecting")
+	http.Redirect(w, r, "/", 302)
+}
+
 func (g *GoogleLogin) DefaultLoginResult(w http.ResponseWriter, r *http.Request) {
 	defaultLogger.Info("Redirecting")
 	defaultLogger.Info(r.URL.Path)
