@@ -8,20 +8,20 @@ import (
 func (c *coordinator) AttachSessionManager(m SessionManager) {
 	m.TestInterface(c.stateFactory.New())
 	c.sessionManager = m
-	c.SetHooks(&c.hooks.loggedIn, c.sessionManager.GetLoggedOutHooks())
-	c.SetHooks(&c.hooks.loggedOut, c.sessionManager.GetLoggedInHooks())
-	c.SetHooks(&c.hooks.authorized, c.sessionManager.GetAuthorizedHooks())
-	c.SetHooks(&c.hooks.aboutToLoad, c.sessionManager.GetAboutToLoadHooks())
+	c.SetHooks(&c.Hooks.LoggedIn, c.sessionManager.GetLoggedOutHooks())
+	c.SetHooks(&c.Hooks.LoggedOut, c.sessionManager.GetLoggedInHooks())
+	c.SetHooks(&c.Hooks.Authorized, c.sessionManager.GetAuthorizedHooks())
+	c.SetHooks(&c.Hooks.AboutToLoad, c.sessionManager.GetAboutToLoadHooks())
 }
 
 func (c *coordinator) AddIdentifier(ident Identifier) {
 	ident.TestInterface(c.stateFactory.New())
 	c.identifiers = append(c.identifiers, ident)
 	last := len(c.identifiers) - 1
-	c.SetHooks(&c.hooks.loggedIn, c.identifiers[last].GetLoggedOutHooks())
-	c.SetHooks(&c.hooks.loggedOut, c.identifiers[last].GetLoggedInHooks())
-	c.SetHooks(&c.hooks.authorized, c.identifiers[last].GetAuthorizedHooks())
-	c.SetHooks(&c.hooks.aboutToLoad, c.identifiers[last].GetAboutToLoadHooks())
+	c.SetHooks(&c.Hooks.LoggedIn, c.identifiers[last].GetLoggedOutHooks())
+	c.SetHooks(&c.Hooks.LoggedOut, c.identifiers[last].GetLoggedInHooks())
+	c.SetHooks(&c.Hooks.Authorized, c.identifiers[last].GetAuthorizedHooks())
+	c.SetHooks(&c.Hooks.AboutToLoad, c.identifiers[last].GetAboutToLoadHooks())
 }
 
 func (c *coordinator) SetHooks(existingHooks *[]Hook, newHooks []Hook) {
@@ -29,9 +29,9 @@ func (c *coordinator) SetHooks(existingHooks *[]Hook, newHooks []Hook) {
 }
 
 // TODO Unsure how it calls user data
-func (c *coordinator) CallHooks(hooks []Hook, w http.ResponseWriter, r *http.Request) {
+func (c *coordinator) CallHooks(hooks []Hook, state ReqByCoord, w http.ResponseWriter, r *http.Request) {
 	for _, hook := range hooks {
-		if err := (*hook)(w, r); err != nil {
+		if err := (*hook)(state, w, r); err != nil {
 			defaultLogger.Error(err.Error())
 		}
 	}

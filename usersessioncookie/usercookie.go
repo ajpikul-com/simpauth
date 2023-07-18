@@ -50,17 +50,17 @@ func (c *CookieSessionManager) NewSession(userStateCoord uwho.ReqByCoord, w http
 	// No prep todo with new session, we can just update session, at least on this implementation
 }
 
-func (c *CookieSessionManager) ReadSession(userStateCoord uwho.ReqByCoord, w http.ResponseWriter, r *http.Request) uwho.UserStatus {
+func (c *CookieSessionManager) ReadSession(userStateCoord uwho.ReqByCoord, w http.ResponseWriter, r *http.Request) bool {
 	cookie, err := r.Cookie(c.id.String())
 	if err == http.ErrNoCookie {
 		c.EndSession(userStateCoord, w, r)
-		return uwho.UNKNOWN
+		return false
 	} else if err == nil {
 		dataBits, err := base64.StdEncoding.DecodeString(cookie.Value)
 		if err != nil {
 			defaultLogger.Error(err.Error())
 			c.EndSession(userStateCoord, w, r)
-			return uwho.UNKNOWN
+			return false
 		}
 		data := string(dataBits[:])
 		defaultLogger.Info("Readsession captured string: " + data)
@@ -68,18 +68,18 @@ func (c *CookieSessionManager) ReadSession(userStateCoord uwho.ReqByCoord, w htt
 			ok = userState.SessionToState(data)
 			if !ok {
 				c.EndSession(userStateCoord, w, r)
-				return uwho.UNKNOWN
+				return false
 			}
 		} else {
 			c.EndSession(userStateCoord, w, r)
-			return uwho.UNKNOWN
+			return false
 		}
 		// THIS IS THE ONLY SUCCESS RETURN
-		return uwho.KNOWN
+		return true
 	} else {
 		defaultLogger.Error(err.Error())
 		c.EndSession(userStateCoord, w, r)
-		return uwho.UNKNOWN
+		return false
 	}
 }
 

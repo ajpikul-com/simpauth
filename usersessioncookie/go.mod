@@ -4,7 +4,7 @@ go 1.20
 
 require (
 	github.com/ajpikul-com/ilog v0.0.0-20230714204235-1f6eb0175462
-	github.com/ajpikul-com/uwho v0.0.0-20230718134205-0429d5a181ba
+	github.com/ajpikul-com/uwho v0.0.0-20230718145515-bdb8cf20dd92
 	github.com/google/uuid v1.3.0
 )
 

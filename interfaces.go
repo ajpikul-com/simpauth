@@ -6,7 +6,7 @@ import (
 )
 
 // INTERFACES THAT MUST BE SATISFIED BY MODULES
-type Hook *func(http.ResponseWriter, *http.Request) error
+type Hook *func(ReqByCoord, http.ResponseWriter, *http.Request) error
 
 type Module interface {
 	TestInterface(ReqByCoord)
@@ -18,16 +18,17 @@ type Module interface {
 
 type Identifier interface {
 	Module
-	VerifyCredentials(ReqByCoord, http.ResponseWriter, *http.Request) UserStatus
+	VerifyCredentials(ReqByCoord, http.ResponseWriter, *http.Request) bool
 }
 
 var ErrSessionExists error = errors.New("Session already exist")
 var ErrStateExists error = errors.New("State already exist")
+var ErrNoCredential error = errors.New("Login Failed")
 
 type SessionManager interface {
 	Module
 	NewSession(ReqByCoord, http.ResponseWriter, *http.Request)
-	ReadSession(ReqByCoord, http.ResponseWriter, *http.Request) UserStatus // The return here is effectively an error
+	ReadSession(ReqByCoord, http.ResponseWriter, *http.Request) bool
 	UpdateSession(ReqByCoord, http.ResponseWriter, *http.Request)
 	EndSession(ReqByCoord, http.ResponseWriter, *http.Request)
 }
@@ -38,7 +39,7 @@ type Factory interface {
 }
 
 type ReqByCoord interface {
-	AuthorizeUser(w http.ResponseWriter, r *http.Request) UserStatus
+	AuthorizeUser(w http.ResponseWriter, r *http.Request) bool
 	InitState() error
 	DeleteState()
-} // Need those hooks back. SessionManager.UpdateSession needs to get registered with the hook.
+}

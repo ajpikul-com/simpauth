@@ -14,7 +14,7 @@ type GoogleLogin struct {
 }
 
 type ReqByIdent interface {
-	AcceptData(map[string]interface{})
+	AcceptData(map[string]interface{}) bool
 }
 
 func New(clientID string) *GoogleLogin {
@@ -33,34 +33,34 @@ func (g *GoogleLogin) TestInterface(stateManager uwho.ReqByCoord) {
 	}
 }
 
-func (g *GoogleLogin) VerifyCredentials(userStateCoord uwho.ReqByCoord, w http.ResponseWriter, r *http.Request) uwho.UserStatus {
+func (g *GoogleLogin) VerifyCredentials(userStateCoord uwho.ReqByCoord, w http.ResponseWriter, r *http.Request) bool {
 	if r.Method == "POST" {
 		r.ParseMultipartForm(4096)
 		cookieCSRFValue, err := r.Cookie("g_csrf_token")
 		if err != nil {
 			defaultLogger.Error(err.Error())
-			return uwho.UNKNOWN
+			return false
 		}
 		if cookieCSRFValue.Value != r.Form["g_csrf_token"][0] {
 			defaultLogger.Info("Under attack? csrf tokens didn't match")
-			return uwho.UNKNOWN
+			return false
 		}
 
 		payload, err := idtoken.Validate(r.Context(), r.Form["credential"][0], "")
 		if err != nil {
 			defaultLogger.Error(err.Error())
-			return uwho.UNKNOWN
+			return false
 		}
 
 		userState, ok := userStateCoord.(ReqByIdent)
 		if !ok {
 			defaultLogger.Error("Interface assertion error")
-			return uwho.UNKNOWN
+			return false
 		}
-		userState.AcceptData(payload.Claims)
-		return uwho.KNOWN
+
+		return userState.AcceptData(payload.Claims)
 	}
-	return uwho.UNKNOWN
+	return false
 }
 
 func (g *GoogleLogin) GoHome(w http.ResponseWriter, r *http.Request) {
