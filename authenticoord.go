@@ -44,6 +44,9 @@ func (c *coordinator) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		userState.DeleteState()
 		userStatus.ReconcileStatus(LOGGEDOUT)
 		c.CallHooks(c.Hooks.LoggedOut, userState, w, r)
+		w.Header().Set("Cache-Control", "no-cache, private, max-age=0")
+		w.Header().Set("Pragma", "no-cache")
+		w.Header().Set("X-Accel-Expires", "0")
 		c.logoutResult.ServeHTTP(w, r)
 		return
 	} else if c.checkLogin(userState, w, r) {
@@ -60,6 +63,9 @@ func (c *coordinator) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 		c.CallHooks(c.Hooks.AboutToLoad, userState, w, r)
+		w.Header().Set("Cache-Control", "no-cache, private, max-age=0")
+		w.Header().Set("Pragma", "no-cache")
+		w.Header().Set("X-Accel-Expires", "0")
 		c.loginResult.ServeHTTP(w, r)
 		return
 	}
