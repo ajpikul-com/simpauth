@@ -70,7 +70,8 @@ func (c *coordinator) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			defaultLogger.Info("Logging in while Logged in?")
 			// TODO I don't know where this should redirect to
 			// I feel like endpoints should naturally kick people away if they are not valid
-		} else if err == nil {
+		} else if err != nil {
+			// Not sure what to do here, InitState failed, so login should too TODO
 			defaultLogger.Error(err.Error())
 		} else {
 			c.sessionManager.NewSession(userState, w, r) // May have to check for ErrSessionExists
