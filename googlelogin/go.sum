@@ -9,8 +9,8 @@ github.com/ajpikul-com/ilog v0.0.0-20230714204235-1f6eb0175462 h1:0Jg2vlHaD0QvLC
 github.com/ajpikul-com/ilog v0.0.0-20230714204235-1f6eb0175462/go.mod h1:xSmkTWT+APtO6ZsnlK54Z12Gxa6AFnwtUOx1r7g0njw=
 github.com/ajpikul-com/sutils v0.0.0-20230716202313-de7d11f3e44f h1:TWogsu/ekzZAfvAkL6fbb3RIcMl9w3v96ZedonWNwW0=
 github.com/ajpikul-com/sutils v0.0.0-20230716202313-de7d11f3e44f/go.mod h1:KRU0PM4+7NE9OLBFrCqc3R66cp4zB4FTKoS2mrTPHpM=
-github.com/ajpikul-com/uwho v0.0.0-20230718145515-bdb8cf20dd92 h1:4++RkcEDjHP2l/G/1a/98osO1U4rXkjX/l8K5wsVEwA=
-github.com/ajpikul-com/uwho v0.0.0-20230718145515-bdb8cf20dd92/go.mod h1:K+a+6wWTbKMsOYGMYcAvMA19dfJvaiOd2Yyoi8qQRuk=
+github.com/ajpikul-com/uwho v0.0.0-20230718165609-3dc7f07ce341 h1:kjMSG/a0880HMcltq8gKUTJKChAf5uxC3Jv8BR/8gwk=
+github.com/ajpikul-com/uwho v0.0.0-20230718165609-3dc7f07ce341/go.mod h1:K+a+6wWTbKMsOYGMYcAvMA19dfJvaiOd2Yyoi8qQRuk=
 github.com/antihax/optional v1.0.0/go.mod h1:uupD/76wgC+ih3iEmQUL+0Ugr19nfwCT1kdvxnR2qWY=
 github.com/benbjohnson/clock v1.1.0 h1:Q92kusRqC1XV2MjkWETPvjJVqKetz1OzxZB7mHJLju8=
 github.com/benbjohnson/clock v1.1.0/go.mod h1:J11/hYXuz8f4ySSvYwY0FKfm+ezbsZBKZxNJlLklBHA=
