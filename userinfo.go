@@ -1,8 +1,6 @@
 package uwho
 
-import (
-	"github.com/google/uuid"
-)
+import ()
 
 type UserStatus int64
 
@@ -15,56 +13,42 @@ const (
 	LOGGEDOUT
 )
 
-type userinfo struct {
-	Status  UserStatus
-	session uuid.NullUUID
-	Data    *[]interface{}
+func (u *UserStatus) StatusStr() string {
+	switch *u {
+	case UNKNOWN:
+		return "UNKNOWN"
+	case KNOWN:
+		return "KNOWN"
+	case EXPIRED:
+		return "EXPIRED"
+	case AUTHORIZED:
+		return "AUTHORIZED"
+	case SPOKEN:
+		return "SPOKEN"
+	case LOGGEDOUT:
+		return "LOGGEDOUT"
+	}
+	return ""
 }
 
-func (u *userinfo) ReconcileStatus(status UserStatus) {
-	if status > u.Status {
-		u.Status = status
+func NewUserStatus() *UserStatus {
+	u := UNKNOWN
+	return &u
+}
+func (u *UserStatus) ReconcileStatus(status UserStatus) {
+	if status > *u {
+		*u = status
 	}
 }
 
-func (u *userinfo) Append(data interface{}) {
-	*u.Data = append(*u.Data, data)
+func (u *UserStatus) SetStatus(status UserStatus) {
+	*u = status
 }
 
-func (u *userinfo) SetStatus(status UserStatus) {
-	u.Status = status
+func (u *UserStatus) IsStatus(status UserStatus) bool {
+	return status == *u
 }
 
-func (u *userinfo) IsStatus(status UserStatus) bool {
-	return status == u.Status
-}
-
-func (u *userinfo) GetStatus() UserStatus {
-	return u.Status
-}
-
-func (u *userinfo) NewSession() {
-	u.session.Valid = true
-	u.session.UUID = uuid.New()
-}
-
-func (u *userinfo) SetSessionPending(uuid uuid.UUID) {
-	u.SetSession(uuid)
-}
-
-func (u *userinfo) SetSession(uuid uuid.UUID) {
-	u.session.Valid = true
-	u.session.UUID = uuid
-}
-
-func (u *userinfo) GetSession() uuid.NullUUID {
-	return u.session
-}
-
-func newUserinfo() *userinfo {
-	return &userinfo{
-		Status:  UNKNOWN,
-		Data:    new([]interface{}),
-		session: uuid.NullUUID{Valid: false},
-	}
+func (u *UserStatus) GetStatus() UserStatus {
+	return *u
 }

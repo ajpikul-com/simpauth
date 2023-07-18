@@ -6,53 +6,10 @@ import (
 )
 
 // TODO: Probably need a function to collect errors and inform user/other people
-type Hook func(*userinfo, http.ResponseWriter, *http.Request) error
 
-func (c *coordinator) AttachServerSessionManager() {
-}
-
-func (c *coordinator) AttachClientSessionManager() {
-}
-
-func (c *coordinator) AddIdentifier(ident Identifier) {
-	c.identifiers = append(c.identifiers, ident)
-	last := len(c.identifiers) - 1
-	c.SetHooks(&c.hooks.loggedIn, c.identifiers[last].GetLoggedOutHooks())
-	c.SetHooks(&c.hooks.loggedOut, c.identifiers[last].GetLoggedInHooks())
-	c.SetHooks(&c.hooks.authorized, c.identifiers[last].GetAuthorizedHooks())
-	c.SetHooks(&c.hooks.aboutToLoad, c.identifiers[last].GetaboutToLoadHooks())
-}
-
-func (c *coordinator) SetHooks(existingHooks *[]*Hook, newHooks []*Hook) {
-	*existingHooks = append(*existingHooks, newHooks...)
-}
-
-func (c *coordinator) CallHooks(hooks []*Hook, userinfo *userinfo, w http.ResponseWriter, r *http.Request) {
-	for _, hook := range hooks {
-		if err := (*hook)(userinfo, w, r); err != nil {
-			defaultLogger.Error(err.Error())
-		}
-	}
-}
-
-func New(desiredResource, loginResult, accessDenied, logoutResult, expiredResult http.Handler,
-	loginEndpoint, logoutEndpoint string) coordinator {
-	loginEndpointParsed, err := url.Parse(loginEndpoint)
-	logoutEndpointParsed, err := url.Parse(logoutEndpoint)
-	if err != nil {
-		panic(err.Error())
-	}
-	return coordinator{
-		desiredResource: desiredResource,
-		loginResult:     loginResult,
-		accessDenied:    accessDenied,
-		logoutResult:    logoutResult,
-		expiredResult:   expiredResult,
-		loginEndpoint:   loginEndpointParsed,
-		logoutEndpoint:  logoutEndpointParsed}
-}
-
-type coordinator struct { // I think everything can be lower case, force initialization
+type coordinator struct {
+	identifiers     []Identifier
+	sessionManager  SessionManager
 	desiredResource http.Handler
 	loginResult     http.Handler
 	accessDenied    http.Handler
@@ -61,51 +18,82 @@ type coordinator struct { // I think everything can be lower case, force initial
 	loginEndpoint   *url.URL
 	logoutEndpoint  *url.URL
 	hooks           struct {
-		loggedOut   [](*Hook)
-		loggedIn    [](*Hook)
-		authorized  [](*Hook)
-		aboutToLoad [](*Hook)
+		loggedOut   []Hook
+		loggedIn    []Hook
+		authorized  []Hook
+		aboutToLoad []Hook
 	}
-	CheckAuthorization *Hook
-	identifiers        []Identifier
-	// clientSessionManager
-	// serverSessionManager
+	applicationUserinfo AppUserinfo
 }
 
 func (c *coordinator) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	userinfo := newUserinfo()
+	userStatus := NewUserStatus()
+	defaultLogger.Info("Serving HTTP from " + r.URL.Path)
 
+	// Check to see if user loggedout
 	if c.checkLogout(w, r) {
-		userinfo.ReconcileStatus(LOGGEDOUT)
-		c.CallHooks(c.hooks.loggedOut, userinfo, w, r)
+		defaultLogger.Info(r.URL.Path + ": We're about to logout")
+		c.sessionManager.EndSession(w, r)
+		c.applicationUserinfo.LogOut()
+		userStatus.ReconcileStatus(LOGGEDOUT)
+		c.CallHooks(c.hooks.loggedOut, w, r)
 		c.logoutResult.ServeHTTP(w, r)
 		return
 	}
 
-	// CHECK USERSESSIONS // MAX on userinfo
-	// CHECK SERVERSESSIONS //
-	if userinfo.IsStatus(KNOWN) {
-		(*c.CheckAuthorization)(userinfo, w, r)
+	// Try to read the session
+	data, opinion := c.sessionManager.ReadSession(w, r)
+	defaultLogger.Info(r.URL.Path + ": Just read session")
+	defaultLogger.Info("Session data: " + data)
+	userStatus.ReconcileStatus(opinion)
+	defaultLogger.Info(userStatus.StatusStr())
+
+	// Found a session
+	if userStatus.IsStatus(KNOWN) {
+		defaultLogger.Info(r.URL.Path + ": KNOWN, attempting to read data and authorize user")
+		// Store cookie data in user structure
+		c.applicationUserinfo.SessionDestring(data)
+
+		// Use stored data to try and authorize user
+		userStatus.ReconcileStatus(c.applicationUserinfo.AuthorizeUser(w, r))
+		defaultLogger.Info(userStatus.StatusStr())
 	}
-	if userinfo.IsStatus(AUTHORIZED) {
-		c.CallHooks(c.hooks.authorized, userinfo, w, r)
-		c.CallHooks(c.hooks.aboutToLoad, userinfo, w, r)
+
+	// User is authorized
+	if userStatus.IsStatus(AUTHORIZED) {
+		defaultLogger.Info(r.URL.Path + ": We are freshly authorized")
+		defaultLogger.Info(userStatus.StatusStr())
+		c.CallHooks(c.hooks.authorized, w, r)
+		c.CallHooks(c.hooks.aboutToLoad, w, r)
+		// If we want to login again (ie multiple logins), should we hijack here?
 		c.desiredResource.ServeHTTP(w, r)
 		return
 	}
 
-	if c.checkLogin(userinfo, w, r) {
-		userinfo.NewSession()
-		c.CallHooks(c.hooks.loggedIn, userinfo, w, r)
-		c.CallHooks(c.hooks.aboutToLoad, userinfo, w, r)
+	// See if we're trying to login
+	if c.checkLogin(w, r) {
+		defaultLogger.Info(r.URL.Path + ": checkLogin returned true")
+		userStatus.ReconcileStatus(KNOWN)
+		if c.applicationUserinfo.InitSession() == ErrSessionExists {
+			defaultLogger.Info("Starting second session? Not possible right now.")
+		} else {
+			c.sessionManager.MarkSession(c.applicationUserinfo.SessionString(), w, r)
+			c.CallHooks(c.hooks.loggedIn, w, r)
+			c.CallHooks(c.hooks.aboutToLoad, w, r)
+		}
 		c.loginResult.ServeHTTP(w, r)
 		return
 	}
 
-	if userinfo.IsStatus(LOGGEDOUT) || userinfo.IsStatus(EXPIRED) {
-		c.CallHooks(c.hooks.loggedOut, userinfo, w, r)
-		c.CallHooks(c.hooks.aboutToLoad, userinfo, w, r)
-		if userinfo.IsStatus(EXPIRED) {
+	// See if we're logged out or expired
+	if userStatus.IsStatus(LOGGEDOUT) || userStatus.IsStatus(EXPIRED) {
+		defaultLogger.Info(r.URL.Path + ": We logged out..")
+		c.sessionManager.EndSession(w, r)
+		c.applicationUserinfo.LogOut()
+		defaultLogger.Info(userStatus.StatusStr())
+		c.CallHooks(c.hooks.loggedOut, w, r)
+		c.CallHooks(c.hooks.aboutToLoad, w, r)
+		if userStatus.IsStatus(EXPIRED) {
 			c.expiredResult.ServeHTTP(w, r)
 		} else {
 			c.logoutResult.ServeHTTP(w, r)
@@ -113,17 +101,23 @@ func (c *coordinator) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	c.CallHooks(c.hooks.aboutToLoad, userinfo, w, r)
+	// Not authorized, known or unkown
+	defaultLogger.Info(r.URL.Path + " but " + userStatus.StatusStr() + " so DENIED")
+	c.CallHooks(c.hooks.aboutToLoad, w, r)
 	c.accessDenied.ServeHTTP(w, r)
 }
 
-func (c *coordinator) checkLogin(userinfo *userinfo, w http.ResponseWriter, r *http.Request) bool {
-	if r.URL.Path == c.loginEndpoint.Path { // I want to do URL comparisons TODO
+func (c *coordinator) checkLogin(w http.ResponseWriter, r *http.Request) bool {
+	loggedIn := false
+	if r.URL.Path == c.loginEndpoint.Path {
+		defaultLogger.Info("Equal paths")
+		defaultLogger.Info(r.URL.Path)
+		defaultLogger.Info(c.loginEndpoint.Path)
 		for _, identifier := range c.identifiers {
-			opinion, userinfoData := identifier.VerifyCredentials(w, r)
+			opinion := identifier.VerifyCredentials(w, r)
 			if opinion == KNOWN {
-				userinfo.ReconcileStatus(KNOWN)
-				userinfo.Append(userinfoData)
+				loggedIn = true
+				defaultLogger.Info("Found a user.")
 			} else if opinion == SPOKEN {
 				// TODO: Identifier trying to hijack whole process
 			} else if opinion != UNKNOWN {
@@ -131,7 +125,7 @@ func (c *coordinator) checkLogin(userinfo *userinfo, w http.ResponseWriter, r *h
 			}
 		}
 	}
-	return userinfo.IsStatus(KNOWN)
+	return loggedIn
 }
 
 func (c *coordinator) checkLogout(w http.ResponseWriter, r *http.Request) bool {

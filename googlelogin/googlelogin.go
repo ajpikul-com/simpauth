@@ -24,45 +24,64 @@ func SetDefaultLogger(newLogger ilog.LoggerInterface) {
 }
 
 type GoogleLogin struct {
-	ClientID string
+	ClientID  string
+	Processor GoogleOauthProcessor
 }
 
-func (g *GoogleLogin) GetLoggedOutHooks() []*uwho.Hook   { return nil }
-func (g *GoogleLogin) GetLoggedInHooks() []*uwho.Hook    { return nil }
-func (g *GoogleLogin) GetAuthorizedHooks() []*uwho.Hook  { return nil }
-func (g *GoogleLogin) GetaboutToLoadHooks() []*uwho.Hook { return nil }
+type GoogleOauthProcessor interface {
+	ProcessOauth(*oauth2.Userinfo)
+}
 
-func (g *GoogleLogin) VerifyCredentials(w http.ResponseWriter, r *http.Request) (uwho.UserStatus, interface{}) {
+func New(clientID string, processor GoogleOauthProcessor) *GoogleLogin {
+	return &GoogleLogin{
+		ClientID:  clientID,
+		Processor: processor,
+	}
+}
+
+func (g *GoogleLogin) GetLoggedOutHooks() []uwho.Hook   { return nil }
+func (g *GoogleLogin) GetLoggedInHooks() []uwho.Hook    { return nil }
+func (g *GoogleLogin) GetAuthorizedHooks() []uwho.Hook  { return nil }
+func (g *GoogleLogin) GetAboutToLoadHooks() []uwho.Hook { return nil }
+
+func (g *GoogleLogin) VerifyCredentials(w http.ResponseWriter, r *http.Request) uwho.UserStatus {
 	if r.Method == "POST" {
 		r.ParseMultipartForm(4096)
 		cookieCSRFValue, err := r.Cookie("g_csrf_token")
 		if err != nil {
 			defaultLogger.Error(err.Error())
-			return uwho.UNKNOWN, nil
+			return uwho.UNKNOWN
 		}
 		if cookieCSRFValue.Value != r.Form["g_csrf_token"][0] {
 			defaultLogger.Info("Under attack? csrf tokens didn't match")
-			return uwho.UNKNOWN, nil // BAD! Not Verified Should probably block this user
+			return uwho.UNKNOWN
 		}
 		service, err := oauth2.NewService(r.Context())
 		if err != nil {
 			defaultLogger.Error(err.Error())
-			return uwho.UNKNOWN, nil // Not validated!
+			return uwho.UNKNOWN
 		}
 		userinfoService := oauth2.NewUserinfoService(service)
 		userinfoGetCall := userinfoService.Get()
 		userinfo, err := userinfoGetCall.Do()
 		if err != nil {
 			defaultLogger.Error(err.Error())
-			return uwho.UNKNOWN, nil // Not Validated
+			return uwho.UNKNOWN
 		}
-		return uwho.KNOWN, userinfo
+		defaultLogger.Info(UserinfoToString(userinfo))
+		g.Processor.ProcessOauth(userinfo)
+		return uwho.KNOWN
 	}
-	return uwho.UNKNOWN, nil
+	return uwho.UNKNOWN
 }
+
 func (g *GoogleLogin) DefaultLoginResult(w http.ResponseWriter, r *http.Request) {
+	defaultLogger.Info("Redirecting")
+	defaultLogger.Info(r.URL.Path)
+	defaultLogger.Info(r.Header.Get("Referer"))
 	http.Redirect(w, r, r.Header.Get("Referer"), 302)
 }
+
 func (g *GoogleLogin) DefaultLoginPortal(loginEndpoint string) http.Handler {
 	return sutils.StringHandler{`<html>
 		<head>
@@ -93,4 +112,11 @@ func (g *GoogleLogin) DefaultLoginPortal(loginEndpoint string) http.Handler {
 		</html>`}
 }
 
-// TODO write helper for "AboutToLoad"
+func UserinfoToString(info *oauth2.Userinfo) string {
+	json, err := info.MarshalJSON()
+	if err != nil {
+		defaultLogger.Error(err.Error())
+		return ""
+	}
+	return string(json[:])
+}
