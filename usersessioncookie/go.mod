@@ -1,4 +1,4 @@
-module github.com/ajpikul-com/usersessioncookie
+module github.com/ajpikul-com/uwho/usersessioncookie
 
 go 1.20
 
