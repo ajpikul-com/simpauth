@@ -17,24 +17,24 @@ type coordinator struct {
 	expiredResult   http.Handler
 	loginEndpoint   *url.URL
 	logoutEndpoint  *url.URL
-	hooks           struct {
+	hooks           struct { // Kinda broken because they don't take user states
 		loggedOut   []Hook
 		loggedIn    []Hook
 		authorized  []Hook
 		aboutToLoad []Hook
 	}
-	applicationUserinfo AppUserinfo
+	stateFactory Factory
 }
 
 func (c *coordinator) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	userStatus := NewUserStatus()
 	defaultLogger.Info("Serving HTTP from " + r.URL.Path)
-
+	userState := c.stateFactory.New()
 	// Check to see if user loggedout
 	if c.checkLogout(w, r) {
 		defaultLogger.Info(r.URL.Path + ": We're about to logout")
 		c.sessionManager.EndSession(w, r)
-		c.applicationUserinfo.LogOut()
+		userState.DeleteState()
 		userStatus.ReconcileStatus(LOGGEDOUT)
 		c.CallHooks(c.hooks.loggedOut, w, r)
 		c.logoutResult.ServeHTTP(w, r)
@@ -42,9 +42,8 @@ func (c *coordinator) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Try to read the session
-	data, opinion := c.sessionManager.ReadSession(w, r)
+	opinion := c.sessionManager.ReadSession(userState, w, r) // DO WE RENEW WHO RENEWS
 	defaultLogger.Info(r.URL.Path + ": Just read session")
-	defaultLogger.Info("Session data: " + data)
 	userStatus.ReconcileStatus(opinion)
 	defaultLogger.Info(userStatus.StatusStr())
 
@@ -52,10 +51,8 @@ func (c *coordinator) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if userStatus.IsStatus(KNOWN) {
 		defaultLogger.Info(r.URL.Path + ": KNOWN, attempting to read data and authorize user")
 		// Store cookie data in user structure
-		c.applicationUserinfo.SessionDestring(data)
-
 		// Use stored data to try and authorize user
-		userStatus.ReconcileStatus(c.applicationUserinfo.AuthorizeUser(w, r))
+		userStatus.ReconcileStatus(userState.AuthorizeUser(w, r))
 		defaultLogger.Info(userStatus.StatusStr())
 	}
 
@@ -71,13 +68,13 @@ func (c *coordinator) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// See if we're trying to login
-	if c.checkLogin(w, r) {
+	if c.checkLogin(userState, w, r) {
 		defaultLogger.Info(r.URL.Path + ": checkLogin returned true")
 		userStatus.ReconcileStatus(KNOWN)
-		if c.applicationUserinfo.InitSession() == ErrSessionExists {
+		if userState.InitState() == ErrSessionExists {
 			defaultLogger.Info("Starting second session? Not possible right now.")
 		} else {
-			c.sessionManager.MarkSession(c.applicationUserinfo.SessionString(), w, r)
+			c.sessionManager.UpdateSession(userState, w, r)
 			c.CallHooks(c.hooks.loggedIn, w, r)
 			c.CallHooks(c.hooks.aboutToLoad, w, r)
 		}
@@ -89,7 +86,7 @@ func (c *coordinator) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if userStatus.IsStatus(LOGGEDOUT) || userStatus.IsStatus(EXPIRED) {
 		defaultLogger.Info(r.URL.Path + ": We logged out..")
 		c.sessionManager.EndSession(w, r)
-		c.applicationUserinfo.LogOut()
+		userState.DeleteState()
 		defaultLogger.Info(userStatus.StatusStr())
 		c.CallHooks(c.hooks.loggedOut, w, r)
 		c.CallHooks(c.hooks.aboutToLoad, w, r)
@@ -107,14 +104,14 @@ func (c *coordinator) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	c.accessDenied.ServeHTTP(w, r)
 }
 
-func (c *coordinator) checkLogin(w http.ResponseWriter, r *http.Request) bool {
+func (c *coordinator) checkLogin(userState ReqByCoord, w http.ResponseWriter, r *http.Request) bool {
 	loggedIn := false
 	if r.URL.Path == c.loginEndpoint.Path {
 		defaultLogger.Info("Equal paths")
 		defaultLogger.Info(r.URL.Path)
 		defaultLogger.Info(c.loginEndpoint.Path)
 		for _, identifier := range c.identifiers {
-			opinion := identifier.VerifyCredentials(w, r)
+			opinion := identifier.VerifyCredentials(userState, w, r)
 			if opinion == KNOWN {
 				loggedIn = true
 				defaultLogger.Info("Found a user.")

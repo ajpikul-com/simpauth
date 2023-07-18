@@ -3,39 +3,23 @@ package googlelogin
 import (
 	"net/http"
 
-	"google.golang.org/api/oauth2/v2"
+	"google.golang.org/api/idtoken"
 
-	"github.com/ajpikul-com/ilog"
 	"github.com/ajpikul-com/sutils"
 	"github.com/ajpikul-com/uwho"
 )
 
-var defaultLogger ilog.LoggerInterface
-
-func init() {
-	if defaultLogger == nil {
-		defaultLogger = new(ilog.EmptyLogger)
-	}
-}
-
-func SetDefaultLogger(newLogger ilog.LoggerInterface) {
-	defaultLogger = newLogger
-	defaultLogger.Info("Default Logger Set")
-}
-
 type GoogleLogin struct {
-	ClientID  string
-	Processor GoogleOauthProcessor
+	ClientID string
 }
 
-type GoogleOauthProcessor interface {
-	ProcessOauth(*oauth2.Userinfo)
+type ReqByIdent interface {
+	AcceptData(map[string]interface{})
 }
 
-func New(clientID string, processor GoogleOauthProcessor) *GoogleLogin {
+func New(clientID string) *GoogleLogin {
 	return &GoogleLogin{
-		ClientID:  clientID,
-		Processor: processor,
+		ClientID: clientID,
 	}
 }
 
@@ -43,8 +27,13 @@ func (g *GoogleLogin) GetLoggedOutHooks() []uwho.Hook   { return nil }
 func (g *GoogleLogin) GetLoggedInHooks() []uwho.Hook    { return nil }
 func (g *GoogleLogin) GetAuthorizedHooks() []uwho.Hook  { return nil }
 func (g *GoogleLogin) GetAboutToLoadHooks() []uwho.Hook { return nil }
+func (g *GoogleLogin) TestInterface(stateManager uwho.ReqByCoord) {
+	if _, ok := stateManager.(ReqByIdent); !ok {
+		panic("State manager doesn't satisfied required interface")
+	}
+}
 
-func (g *GoogleLogin) VerifyCredentials(w http.ResponseWriter, r *http.Request) uwho.UserStatus {
+func (g *GoogleLogin) VerifyCredentials(userStateCoord uwho.ReqByCoord, w http.ResponseWriter, r *http.Request) uwho.UserStatus {
 	if r.Method == "POST" {
 		r.ParseMultipartForm(4096)
 		cookieCSRFValue, err := r.Cookie("g_csrf_token")
@@ -56,20 +45,19 @@ func (g *GoogleLogin) VerifyCredentials(w http.ResponseWriter, r *http.Request) 
 			defaultLogger.Info("Under attack? csrf tokens didn't match")
 			return uwho.UNKNOWN
 		}
-		service, err := oauth2.NewService(r.Context())
+
+		payload, err := idtoken.Validate(r.Context(), r.Form["credential"][0], "")
 		if err != nil {
 			defaultLogger.Error(err.Error())
 			return uwho.UNKNOWN
 		}
-		userinfoService := oauth2.NewUserinfoService(service)
-		userinfoGetCall := userinfoService.Get()
-		userinfo, err := userinfoGetCall.Do()
-		if err != nil {
-			defaultLogger.Error(err.Error())
+
+		userState, ok := userStateCoord.(ReqByIdent)
+		if !ok {
+			defaultLogger.Error("Interface assertion error")
 			return uwho.UNKNOWN
 		}
-		defaultLogger.Info(UserinfoToString(userinfo))
-		g.Processor.ProcessOauth(userinfo)
+		userState.AcceptData(payload.Claims)
 		return uwho.KNOWN
 	}
 	return uwho.UNKNOWN
@@ -110,13 +98,4 @@ func (g *GoogleLogin) DefaultLoginPortal(loginEndpoint string) http.Handler {
 		</div>
 		<body>
 		</html>`}
-}
-
-func UserinfoToString(info *oauth2.Userinfo) string {
-	json, err := info.MarshalJSON()
-	if err != nil {
-		defaultLogger.Error(err.Error())
-		return ""
-	}
-	return string(json[:])
 }

@@ -22,53 +22,74 @@ func SetDefaultLogger(newLogger ilog.LoggerInterface) {
 	defaultLogger.Info("Default Logger Set")
 }
 
+type ReqBySess interface {
+	StateToSession() string
+	SessionToState(string) bool // Not sure why again
+}
+
 type CookieSessionManager struct {
 	id uuid.UUID
 }
 
-func (g *CookieSessionManager) GetLoggedOutHooks() []uwho.Hook   { return nil }
-func (g *CookieSessionManager) GetLoggedInHooks() []uwho.Hook    { return nil }
-func (g *CookieSessionManager) GetAuthorizedHooks() []uwho.Hook  { return nil }
-func (g *CookieSessionManager) GetAboutToLoadHooks() []uwho.Hook { return nil }
-
+func (c *CookieSessionManager) GetLoggedOutHooks() []uwho.Hook   { return nil }
+func (c *CookieSessionManager) GetLoggedInHooks() []uwho.Hook    { return nil }
+func (c *CookieSessionManager) GetAuthorizedHooks() []uwho.Hook  { return nil }
+func (c *CookieSessionManager) GetAboutToLoadHooks() []uwho.Hook { return nil }
+func (c *CookieSessionManager) TestInterface(stateManager uwho.ReqByCoord) {
+	if _, ok := stateManager.(ReqBySess); !ok {
+		panic("State manager doesn't satisfied required interface")
+	}
+}
 func New() *CookieSessionManager {
 	return &CookieSessionManager{
 		id: uuid.New(),
 	}
 }
 
-// TODO: needs some encryption or signing here
+func (c *CookieSessionManager) NewSession(http.ResponseWriter, *http.Request) {
+	// No prep todo with new session, we can just update session
+}
 
-func (m *CookieSessionManager) ReadSession(w http.ResponseWriter, r *http.Request) (string, uwho.UserStatus) {
-	cookie, err := r.Cookie(m.id.String())
+func (c *CookieSessionManager) ReadSession(userStateCoord uwho.ReqByCoord, w http.ResponseWriter, r *http.Request) uwho.UserStatus {
+	cookie, err := r.Cookie(c.id.String())
 	if err == http.ErrNoCookie {
-		return "", uwho.UNKNOWN
+		return uwho.UNKNOWN
 	} else if err == nil {
 		dataBits, err := base64.StdEncoding.DecodeString(cookie.Value)
 		if err != nil {
 			defaultLogger.Error(err.Error())
-			return "", uwho.UNKNOWN
+			return uwho.UNKNOWN
 		}
 		data := string(dataBits[:])
 		defaultLogger.Info("Readsession captured string: " + data)
-		return data, uwho.KNOWN
+		if userState, ok := userStateCoord.(ReqBySess); ok {
+			ok = userState.SessionToState(data)
+			if !ok {
+				return uwho.UNKNOWN
+			}
+		} else {
+			return uwho.UNKNOWN
+		}
+		return uwho.KNOWN
 	} else {
 		defaultLogger.Error(err.Error())
-		return "", uwho.UNKNOWN
+		return uwho.UNKNOWN
 	}
 }
 
-func (m *CookieSessionManager) MarkSession(data string, w http.ResponseWriter, r *http.Request) {
-	http.SetCookie(w, &http.Cookie{
-		Name:  m.id.String(),
-		Value: base64.StdEncoding.EncodeToString([]byte(data)),
-		Path:  "/", // Maybe we should be setting this when we initialize it? Not sure how it really effects behavior
-	})
+func (c *CookieSessionManager) UpdateSession(userStateCoord uwho.ReqByCoord, w http.ResponseWriter, r *http.Request) {
+	if userState, ok := userStateCoord.(ReqBySess); ok {
+		http.SetCookie(w, &http.Cookie{
+			Name:  c.id.String(),
+			Value: base64.StdEncoding.EncodeToString([]byte(userState.StateToSession())),
+			Path:  "/", // Maybe we should be setting this when we initialize it? Not sure how it really effects behavior
+		})
+	}
 }
 
-func (m *CookieSessionManager) EndSession(w http.ResponseWriter, r *http.Request) {
+func (c *CookieSessionManager) EndSession(w http.ResponseWriter, r *http.Request) {
 	http.SetCookie(w, &http.Cookie{
-		Name:   m.id.String(),
+		Name:   c.id.String(),
 		Value:  "",
 		MaxAge: -1,
 		Path:   "/", // Maybe we should be setting this when we initialize it? Not sure how it really effects behavior

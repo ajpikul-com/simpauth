@@ -7,7 +7,7 @@ replace github.com/ajpikul-com/uwho => ../
 require (
 	github.com/ajpikul-com/ilog v0.0.0-20230714204235-1f6eb0175462
 	github.com/ajpikul-com/sutils v0.0.0-20230716202313-de7d11f3e44f
-	github.com/ajpikul-com/uwho v0.0.0-20230717005638-de1e431d1c34
+	github.com/ajpikul-com/uwho v0.0.0-20230718002221-ae196e2fcc25
 	google.golang.org/api v0.131.0
 )
 
@@ -30,7 +30,7 @@ require (
 	golang.org/x/sys v0.10.0 // indirect
 	golang.org/x/text v0.11.0 // indirect
 	google.golang.org/appengine v1.6.7 // indirect
-	google.golang.org/genproto/googleapis/rpc v0.0.0-20230711160842-782d3b101e98 // indirect
+	google.golang.org/genproto/googleapis/rpc v0.0.0-20230717213848-3f92550aa753 // indirect
 	google.golang.org/grpc v1.56.2 // indirect
 	google.golang.org/protobuf v1.31.0 // indirect
 )

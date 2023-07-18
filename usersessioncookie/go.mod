@@ -6,7 +6,7 @@ replace github.com/ajpikul-com/uwho => ../
 
 require (
 	github.com/ajpikul-com/ilog v0.0.0-20230714204235-1f6eb0175462
-	github.com/ajpikul-com/uwho v0.0.0-20230717005638-de1e431d1c34
+	github.com/ajpikul-com/uwho v0.0.0-20230718002221-ae196e2fcc25
 	github.com/google/uuid v1.3.0
 )
 
