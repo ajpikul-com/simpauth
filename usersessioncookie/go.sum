@@ -1,7 +1,7 @@
 github.com/ajpikul-com/ilog v0.0.0-20230714204235-1f6eb0175462 h1:0Jg2vlHaD0QvLCyKfza4nbHV8t3ywg6IxwZ4Pc18yic=
 github.com/ajpikul-com/ilog v0.0.0-20230714204235-1f6eb0175462/go.mod h1:xSmkTWT+APtO6ZsnlK54Z12Gxa6AFnwtUOx1r7g0njw=
-github.com/ajpikul-com/uwho v0.0.0-20230718165751-1673febb7548 h1:B3aMoBT5sVQelENAzQCED4Xx9G1XD0/LnlDBdvOh840=
-github.com/ajpikul-com/uwho v0.0.0-20230718165751-1673febb7548/go.mod h1:K+a+6wWTbKMsOYGMYcAvMA19dfJvaiOd2Yyoi8qQRuk=
+github.com/ajpikul-com/uwho v0.0.0-20230719015838-6d56c11074b9 h1:VGpN95StrkWnWxQkeS3jQusFXejn1m3lUNxKGFwrei4=
+github.com/ajpikul-com/uwho v0.0.0-20230719015838-6d56c11074b9/go.mod h1:K+a+6wWTbKMsOYGMYcAvMA19dfJvaiOd2Yyoi8qQRuk=
 github.com/benbjohnson/clock v1.1.0 h1:Q92kusRqC1XV2MjkWETPvjJVqKetz1OzxZB7mHJLju8=
 github.com/benbjohnson/clock v1.1.0/go.mod h1:J11/hYXuz8f4ySSvYwY0FKfm+ezbsZBKZxNJlLklBHA=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
