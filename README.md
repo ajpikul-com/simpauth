@@ -1,5 +1,7 @@
 # DEVELOPERS ONLY 
 
+But these are not developer docs, for writing modules. But still, developers only.
+
 There are no tests.
 
 ## Basic Idea of uWHO
