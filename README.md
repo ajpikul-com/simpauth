@@ -101,9 +101,9 @@ func main() {
 	// Wrap your filesever (or any other http mux) in an `uwho.coordinator`, which forces auth before access
 	fileServer := uwho.New( // new coordinator
 		http.FileServer(http.Dir("/to/your/directory/to/server"), // this is what we're really serving
-		googleIdent.DefaultLoginResult, // send user where they originally wanted to go w/ a redirect
+		&googlelogin.DefaultLoginResult{}, // send user where they originally wanted to go w/ a redirect
 		loginScreen, // the default login screen we're given for Google Sign On
-		googleIdent.RedirectHome, // we logged out, so go home
+		&googlelogin.RedirectHome{}, // we logged out, so go home
 		"/login", // endpoint that will treat user like they're trying to log in (ie look for credentials)
 		"/logout", // endpoint that will log user out if they access in any way
 		&myFactory) // how coordinator will create your state objects
