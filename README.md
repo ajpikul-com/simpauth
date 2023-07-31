@@ -82,7 +82,7 @@ There are two types of modules (besides `Coordinator`):
 1) Credentialing (or Identifying) which could be Google Sign In, User/Pass, certs, or anything else a user uses to prove some information about them is legitimate (e.g. "this is my real email"). 
 2) Session Management, which is how we attach credentials to a user over time/page clicks and navigating to different pages.
 
-You generally don't call any of those functions directly- but you can- coordinator has a bunch of hooks to hook into.
+You generally don't call any of those required functions directly- but you can- coordinator has a bunch of hooks to hook into.
 
 ### Configuration 
 
@@ -96,7 +96,7 @@ import (
 )
 
 func main() {
-	cookieSession := usersessioncookie.New()
+	cookieSession := usersessioncookie.New() // This has changed
 	googleIdent   := googlelogin.New(clientID) // clientID is a string you get from your google cloud console
 	loginScreen   := googleIdent.DefaultLoginPortal("/login") // googlelogin provides an httpHandler that displays a login form
 	
@@ -141,7 +141,7 @@ They are part of `coordinator.Hooks` and must be of `Hook` type, see example to 
 	// We're going to assert it as the native type we declared. This should _always work_, but theoretically
 	// we could just try and handle any possible error.
 	// NOTE: when you initialize, like above, all modules and coordinator test your state struct to see if it fulfils all interfaces
-	// They will panic if they don't, so asserts after initialization should be fine
+	// They will panic if they don't, so type-asserts after initialization should be fine
 	if state, ok := stateProvided.(*stageState); ok {
 		w.Header().Set("Cache-Control", "no-cache, no-store, must-revalidate")
 		w.Header().Set("Pragma", "no-cache")
@@ -155,6 +155,6 @@ They are part of `coordinator.Hooks` and must be of `Hook` type, see example to 
 }
 ```
 
-// TODO: State Diagram Of Coordinator.//Hooks
+// TODO: State Diagram Of Coordinator w/ hooks
 
 
