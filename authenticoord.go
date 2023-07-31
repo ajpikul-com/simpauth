@@ -62,6 +62,9 @@ func (c *coordinator) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		c.CallHooks(c.Hooks.AboutToLoad, userState, w, r)
 		c.loginResult.ServeHTTP(w, r)
 		return
+	} else if r.URL.Path == c.loginEndpoint.Path {
+		c.CallHooks(c.Hooks.AboutToLoad, userState, w, r)
+		c.accessDenied.ServeHTTP(w, r)
 	}
 
 	// KNOWN OR UNKNOWN (LOGGEDOUT RETURNED)
