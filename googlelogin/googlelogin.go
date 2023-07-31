@@ -66,16 +66,16 @@ func (g *GoogleLogin) VerifyCredentials(userStateCoord uwho.ReqByCoord, w http.R
 type RedirectHome struct{}
 
 func (d *RedirectHome) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	defaultLogger.Info("Redirecting")
+	defaultLogger.Debug("Redirecting")
 	http.Redirect(w, r, "/", 302)
 }
 
 type DefaultLoginResult struct{}
 
 func (d *DefaultLoginResult) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	defaultLogger.Info("Redirecting")
-	defaultLogger.Info(r.URL.Path)
-	defaultLogger.Info(r.Header.Get("Referer"))
+	defaultLogger.Debug("Redirecting")
+	defaultLogger.Debug(r.URL.Path)
+	defaultLogger.Debug(r.Header.Get("Referer"))
 	http.Redirect(w, r, r.Header.Get("Referer"), 302)
 }
 

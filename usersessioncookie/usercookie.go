@@ -107,7 +107,7 @@ func (c *CookieSessionManager) ReadSession(userStateCoord uwho.ReqByCoord, w htt
 		}
 		err = c.private.PublicKey().Verify(dataBits, signature)
 		if err != nil {
-			defaultLogger.Info(err.Error())
+			defaultLogger.Debug(err.Error())
 			c.EndSession(userStateCoord, w, r)
 			return false
 		}
@@ -121,7 +121,7 @@ func (c *CookieSessionManager) ReadSession(userStateCoord uwho.ReqByCoord, w htt
 			expired = true
 		}
 		data := string(dataBits[:])
-		defaultLogger.Info("Readsession captured string: " + data)
+		defaultLogger.Debug("Readsession captured string: " + data)
 		if userState, ok := userStateCoord.(ReqBySess); ok {
 			ok = userState.SessionToState(data, expired)
 			if !ok || expired {

@@ -26,7 +26,7 @@ type coordinator struct {
 }
 
 func (c *coordinator) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	defaultLogger.Info("Serving HTTP from " + r.URL.Path)
+	defaultLogger.Debug("Serving HTTP from " + r.URL.Path)
 	userStatus := NewUserStatus()
 	userState := c.stateFactory.New()
 
@@ -39,7 +39,7 @@ func (c *coordinator) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	// Checking Endpoint
 	if c.checkLogout(w, r) {
-		defaultLogger.Info(r.URL.Path + ": We're about to logout")
+		defaultLogger.Debug(r.URL.Path + ": We're about to logout")
 		c.sessionManager.EndSession(userState, w, r)
 		userState.DeleteState()
 		userStatus.ReconcileStatus(LOGGEDOUT)
@@ -47,7 +47,7 @@ func (c *coordinator) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		c.logoutResult.ServeHTTP(w, r)
 		return
 	} else if c.checkLogin(userState, w, r) {
-		defaultLogger.Info(r.URL.Path + ": checkLogin returned true")
+		defaultLogger.Debug(r.URL.Path + ": checkLogin returned true")
 		if userStatus.IsStatus(UNKNOWN) {
 			err := userState.InitState()
 			if err != nil {
@@ -71,19 +71,19 @@ func (c *coordinator) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	// KNOWN OR UNKNOWN (LOGGEDOUT RETURNED)
 
 	if userStatus.IsStatus(KNOWN) {
-		defaultLogger.Info(r.URL.Path + ": KNOWN, attempting to read data and authorize user")
+		defaultLogger.Debug(r.URL.Path + ": KNOWN, attempting to read data and authorize user")
 		if userState.AuthorizeUser(w, r) {
 			userStatus.ReconcileStatus(AUTHORIZED)
 		}
-		defaultLogger.Info(userStatus.StatusStr())
+		defaultLogger.Debug(userStatus.StatusStr())
 	}
 
 	// KNOWN, UNKNOWN, OR AUTHORIZED (MAYBE UNAUTHORIZED)
 
 	// User is authorized
 	if userStatus.IsStatus(AUTHORIZED) {
-		defaultLogger.Info(r.URL.Path + ": We are freshly authorized")
-		defaultLogger.Info(userStatus.StatusStr())
+		defaultLogger.Debug(r.URL.Path + ": We are freshly authorized")
+		defaultLogger.Debug(userStatus.StatusStr())
 		c.CallHooks(c.Hooks.Authorized, userState, w, r)
 		c.CallHooks(c.Hooks.AboutToLoad, userState, w, r)
 		c.desiredResource.ServeHTTP(w, r)
@@ -97,9 +97,9 @@ func (c *coordinator) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 func (c *coordinator) checkLogin(userState ReqByCoord, w http.ResponseWriter, r *http.Request) bool {
 	loggedIn := false
 	if r.URL.Path == c.loginEndpoint.Path {
-		defaultLogger.Info("Equal paths")
-		defaultLogger.Info(r.URL.Path)
-		defaultLogger.Info(c.loginEndpoint.Path)
+		defaultLogger.Debug("Equal paths")
+		defaultLogger.Debug(r.URL.Path)
+		defaultLogger.Debug(c.loginEndpoint.Path)
 		for _, identifier := range c.identifiers {
 			loggedIn = identifier.VerifyCredentials(userState, w, r)
 		}
