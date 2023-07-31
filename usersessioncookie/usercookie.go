@@ -1,10 +1,14 @@
 package usersessioncookie
 
 import (
+	"crypto/rand"
 	"encoding/base64"
 	"net/http"
+	"os"
 	"strings"
 	"time"
+
+	"golang.org/x/crypto/ssh"
 
 	"github.com/ajpikul-com/ilog"
 	"github.com/ajpikul-com/uwho"
@@ -30,8 +34,9 @@ type ReqBySess interface {
 }
 
 type CookieSessionManager struct {
-	id     uuid.UUID
-	expiry time.Duration
+	id      uuid.UUID
+	expiry  time.Duration
+	private ssh.Signer
 }
 
 func (c *CookieSessionManager) GetLoggedOutHooks() []uwho.Hook   { return nil }
@@ -43,10 +48,20 @@ func (c *CookieSessionManager) TestInterface(stateManager uwho.ReqByCoord) {
 		panic("State manager doesn't satisfied required interface")
 	}
 }
-func New(expiry time.Duration) *CookieSessionManager {
+func New(expiry time.Duration, key string) *CookieSessionManager {
+	privateBytes, err := os.ReadFile(key)
+	if err != nil {
+		panic(err.Error())
+	}
+	private, err := ssh.ParsePrivateKey(privateBytes)
+	if err != nil {
+		panic(err.Error())
+	}
+
 	return &CookieSessionManager{
-		id:     uuid.New(),
-		expiry: expiry,
+		id:      uuid.New(),
+		expiry:  expiry,
+		private: private,
 	}
 }
 
@@ -62,6 +77,40 @@ func (c *CookieSessionManager) ReadSession(userStateCoord uwho.ReqByCoord, w htt
 		return false
 	} else if err == nil {
 		splitValue := strings.Split(cookie.Value, "&")
+		blob, err := base64.StdEncoding.DecodeString(splitValue[3])
+		if err != nil {
+			c.EndSession(userStateCoord, w, r)
+			return false
+		}
+		signature := &ssh.Signature{
+			Format: splitValue[2],
+			Blob:   blob,
+		}
+		if len(splitValue) == 5 {
+			rest, err := base64.StdEncoding.DecodeString(splitValue[4])
+			if err != nil {
+				c.EndSession(userStateCoord, w, r)
+				return false
+			}
+			signature.Rest = rest
+			defaultLogger.Error("Read a sig string:")
+			defaultLogger.Error(splitValue[2] + "&" + splitValue[3] + "&" + splitValue[4])
+		} else {
+			defaultLogger.Error("Read a sig string:")
+			defaultLogger.Error(splitValue[2] + "&" + splitValue[3])
+		}
+		dataBits, err := base64.StdEncoding.DecodeString(splitValue[0])
+		if err != nil {
+			defaultLogger.Error(err.Error())
+			c.EndSession(userStateCoord, w, r)
+			return false
+		}
+		err = c.private.PublicKey().Verify(dataBits, signature)
+		if err != nil {
+			defaultLogger.Info(err.Error())
+			c.EndSession(userStateCoord, w, r)
+			return false
+		}
 		t, err := time.Parse(time.RFC3339, splitValue[1])
 		if err != nil {
 			c.EndSession(userStateCoord, w, r)
@@ -70,12 +119,6 @@ func (c *CookieSessionManager) ReadSession(userStateCoord uwho.ReqByCoord, w htt
 		if c.expiry != 0 && time.Now().After(t.Add(c.expiry)) {
 			c.EndSession(userStateCoord, w, r)
 			expired = true
-		}
-		dataBits, err := base64.StdEncoding.DecodeString(splitValue[0])
-		if err != nil {
-			defaultLogger.Error(err.Error())
-			c.EndSession(userStateCoord, w, r)
-			return false
 		}
 		data := string(dataBits[:])
 		defaultLogger.Info("Readsession captured string: " + data)
@@ -101,7 +144,15 @@ func (c *CookieSessionManager) ReadSession(userStateCoord uwho.ReqByCoord, w htt
 func (c *CookieSessionManager) UpdateSession(userStateCoord uwho.ReqByCoord, w http.ResponseWriter, r *http.Request) {
 	if userState, ok := userStateCoord.(ReqBySess); ok {
 		t, _ := time.Now().MarshalText()
-		value := base64.StdEncoding.EncodeToString([]byte(userState.StateToSession())) + "&" + string(t[:])
+		bytes := []byte(userState.StateToSession())
+		signature, _ := c.private.Sign(rand.Reader, bytes)
+		sigString := signature.Format + "&" + base64.StdEncoding.EncodeToString(signature.Blob)
+		if len(signature.Rest) != 0 {
+			sigString += "&" + base64.StdEncoding.EncodeToString(signature.Rest)
+		}
+		defaultLogger.Error("Generated up a sig string:")
+		defaultLogger.Error(sigString)
+		value := base64.StdEncoding.EncodeToString(bytes) + "&" + string(t[:]) + "&" + sigString
 		http.SetCookie(w, &http.Cookie{
 			Name:  c.id.String(),
 			Value: value,
