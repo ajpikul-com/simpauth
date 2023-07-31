@@ -3,8 +3,8 @@ module github.com/ajpikul-com/uwho/usersessioncookie
 go 1.20
 
 require (
-	github.com/ajpikul-com/ilog v0.0.0-20230714204235-1f6eb0175462
-	github.com/ajpikul-com/uwho v0.0.0-20230719015838-6d56c11074b9
+	github.com/ajpikul-com/ilog v0.0.0-20230725172214-d939933fe302
+	github.com/ajpikul-com/uwho v0.0.0-20230719031813-8957703735a9
 	github.com/google/uuid v1.3.0
 )
 
