@@ -103,7 +103,7 @@ func (c *CookieSessionManager) UpdateSession(userStateCoord uwho.ReqByCoord, w h
 		t, _ := time.Now().MarshalText()
 		http.SetCookie(w, &http.Cookie{
 			Name:  c.id.String(),
-			Value: base64.StdEncoding.EncodeToString(append([]byte(userState.StateToSession()), t...)),
+			Value: base64.StdEncoding.EncodeToString(append([]byte(userState.StateToSession()+"&"), t...)),
 			Path:  "/", // Maybe we should be setting this when we initialize it? Not sure how it really effects behavior
 		})
 	}
