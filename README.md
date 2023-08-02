@@ -1,6 +1,16 @@
 # DEVELOPERS ONLY 
 
-But these are not developer docs, for writing modules. But still, developers only.
+The cookie library, `usersessioncookie`, should allow us to set domain for cookies.
+
+This library should cross domain tools, or `sutils` should.
+
+`Mux --> Auth --> Handler` is a fine structure, but simple.
+
+`Auth --> Mux --> Handler` is more powerful if we have one auth regine for many types of handlers.
+
+`Mux --> Auth --> Mux --> Handler` is the most complicated scheme but the best way if the path routing is really a patch work of auth/not-auth and different handlers.
+
+But these are not developer docs as in for writing modules. But still, developers only.
 
 There are no tests.
 
