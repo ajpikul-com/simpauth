@@ -37,6 +37,8 @@ type CookieSessionManager struct {
 	id      uuid.UUID
 	expiry  time.Duration
 	private ssh.Signer
+	domain  string
+	path    string
 }
 
 func (c *CookieSessionManager) GetLoggedOutHooks() []uwho.Hook   { return nil }
@@ -48,7 +50,7 @@ func (c *CookieSessionManager) TestInterface(stateManager uwho.ReqByCoord) {
 		panic("State manager doesn't satisfied required interface")
 	}
 }
-func New(expiry time.Duration, key string) *CookieSessionManager {
+func New(domain string, path string, expiry time.Duration, key string) *CookieSessionManager {
 	privateBytes, err := os.ReadFile(key)
 	if err != nil {
 		panic(err.Error())
@@ -62,6 +64,8 @@ func New(expiry time.Duration, key string) *CookieSessionManager {
 		id:      uuid.New(),
 		expiry:  expiry,
 		private: private,
+		domain:  domain,
+		path:    path,
 	}
 }
 
@@ -154,9 +158,10 @@ func (c *CookieSessionManager) UpdateSession(userStateCoord uwho.ReqByCoord, w h
 		defaultLogger.Error(sigString)
 		value := base64.StdEncoding.EncodeToString(bytes) + "&" + string(t[:]) + "&" + sigString
 		http.SetCookie(w, &http.Cookie{
-			Name:  c.id.String(),
-			Value: value,
-			Path:  "/", // Maybe we should be setting this when we initialize it? Not sure how it really effects behavior
+			Name:   c.id.String(),
+			Value:  value,
+			Domain: c.domain,
+			Path:   c.path,
 		})
 	}
 }
