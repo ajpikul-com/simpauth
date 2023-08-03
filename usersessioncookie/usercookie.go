@@ -158,10 +158,11 @@ func (c *CookieSessionManager) UpdateSession(userStateCoord uwho.ReqByCoord, w h
 		defaultLogger.Error(sigString)
 		value := base64.StdEncoding.EncodeToString(bytes) + "&" + string(t[:]) + "&" + sigString
 		http.SetCookie(w, &http.Cookie{
-			Name:   c.id.String(),
-			Value:  value,
-			Domain: c.domain,
-			Path:   c.path,
+			Name:    c.id.String(),
+			Value:   value,
+			Domain:  c.domain,
+			Path:    c.path,
+			Expires: time.Now().Add(c.expiry),
 		})
 	}
 }

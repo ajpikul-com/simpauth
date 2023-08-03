@@ -2,9 +2,9 @@
 
 `usersessioncookie` takes a string, puts it in a cookie, and gives you back the string on read. It does no expiry or encryption, but it should.
 
-`New(expiry time.Duration, key string)` to create it.
+`New(domain string, path string, expiry time.Duration, key string)` to create it.
 
-If expiry is set to 0, (maybe `0 * time.Second`), there is no expiry. Key must be a path to a private key.
+If expiry is set to 0, (maybe `0 * time.Second`), there is no set (it will expire when they close the browser!). Key must be a path to a private key.
 
 Every instance comes with a unique UUID and cookie name to not conflict other cookies or instances of usersessioncookie.
 
