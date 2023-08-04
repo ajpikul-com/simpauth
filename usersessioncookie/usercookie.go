@@ -172,6 +172,7 @@ func (c *CookieSessionManager) EndSession(userStateCoord uwho.ReqByCoord, w http
 		Name:   c.id.String(),
 		Value:  "",
 		MaxAge: -1,
-		Path:   "/",
+		Domain: c.domain,
+		Path:   c.path,
 	})
 }
