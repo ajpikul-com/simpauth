@@ -5,7 +5,7 @@ go 1.20
 require (
 	github.com/ajpikul-com/ilog v0.0.0-20230802005115-88d039e2c7e6
 	github.com/ajpikul-com/sutils v0.0.0-20230726160649-ba74881217b6
-	github.com/ajpikul-com/uwho v0.0.0-20231022172703-9bb8da4abde8
+	github.com/ajpikul-com/uwho v0.0.0-20231022175849-bcee041f9556
 	google.golang.org/api v0.148.0
 )
 

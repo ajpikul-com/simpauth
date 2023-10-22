@@ -19,6 +19,8 @@ github.com/ajpikul-com/uwho v0.0.0-20230719015838-6d56c11074b9 h1:VGpN95StrkWnWx
 github.com/ajpikul-com/uwho v0.0.0-20230719015838-6d56c11074b9/go.mod h1:K+a+6wWTbKMsOYGMYcAvMA19dfJvaiOd2Yyoi8qQRuk=
 github.com/ajpikul-com/uwho v0.0.0-20231022172703-9bb8da4abde8 h1:kvVX88KnT5EhwT/8nJhMWjFkaYvlb635zPBs/8hD+q4=
 github.com/ajpikul-com/uwho v0.0.0-20231022172703-9bb8da4abde8/go.mod h1:MfhK+BLPVD5eTSepKSKs3I9uwF+vkUgLrMvncB4Hi1Q=
+github.com/ajpikul-com/uwho v0.0.0-20231022175849-bcee041f9556 h1:wDCeaB102spPixLsc0CBvjwKzy/ARtcetdohJ7m5N5U=
+github.com/ajpikul-com/uwho v0.0.0-20231022175849-bcee041f9556/go.mod h1:MfhK+BLPVD5eTSepKSKs3I9uwF+vkUgLrMvncB4Hi1Q=
 github.com/antihax/optional v1.0.0/go.mod h1:uupD/76wgC+ih3iEmQUL+0Ugr19nfwCT1kdvxnR2qWY=
 github.com/benbjohnson/clock v1.1.0 h1:Q92kusRqC1XV2MjkWETPvjJVqKetz1OzxZB7mHJLju8=
 github.com/benbjohnson/clock v1.1.0/go.mod h1:J11/hYXuz8f4ySSvYwY0FKfm+ezbsZBKZxNJlLklBHA=
