@@ -1,2 +1,1 @@
-github.com/ajpikul-com/ilog@alpha
-
+github.com/ajpikul-com/ilog@master
