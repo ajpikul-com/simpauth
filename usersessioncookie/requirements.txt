@@ -1,4 +1,4 @@
 golang.org/x/crypto/ssh@latest
 github.com/ajpikul-com/ilog@master
-github.com/ajpikul-com/uwho@master
+github.com/ajpikul-com/uwho@alpha
 github.com/google/uuid@latest

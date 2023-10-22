@@ -1,4 +1,4 @@
 google.golang.org/api/idtoken@latest
 github.com/ajpikul-com/sutils@master
-github.com/ajpikul-com/uwho@master
+github.com/ajpikul-com/uwho@alpha
 
