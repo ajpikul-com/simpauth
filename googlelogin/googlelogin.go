@@ -10,7 +10,7 @@ import (
 )
 
 type ReqByIdent interface {
-	AcceptData(map[string]interface{}) bool
+	AcceptData(map[string]interface{})
 }
 
 type GoogleLogin struct {
@@ -75,8 +75,10 @@ func DefaultLoginDiv(loginEndpoint string, clientID string) string {
 		 data-logo_alignment="left">
 </div>`
 }
+
 func DefaultLoginPortal(loginEndpoint string, clientID string) http.Handler {
-	return sutils.StringHandler{`<html>
+	return sutils.StringHandler{`<!DOCTYPE html>
+<html>
 	<head>
 		<script src="https://accounts.google.com/gsi/client" async></script>
 	</head>
