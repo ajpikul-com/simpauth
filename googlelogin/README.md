@@ -1,3 +1,5 @@
+Not updated for BETA
+
 # googelogin
 
 This module allows you to use google login. It requires some set-up on google's end.

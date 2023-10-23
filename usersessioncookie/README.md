@@ -1,3 +1,5 @@
+Not updated for beta
+
 # usersessioncookie
 
 should add encryption option
