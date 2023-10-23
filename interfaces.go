@@ -5,32 +5,21 @@ import (
 	"net/http"
 )
 
-// INTERFACES THAT MUST BE SATISFIED BY MODULES
-type Hook *func(ReqByCoord, http.ResponseWriter, *http.Request) error
-
 type Module interface {
 	TestInterface(ReqByCoord)
-	GetLoggedOutHooks() []Hook
-	GetLoggedInHooks() []Hook
-	GetAuthorizedHooks() []Hook
-	GetAboutToLoadHooks() []Hook
 }
 
 type Identifier interface {
 	Module
-	VerifyCredentials(ReqByCoord, http.ResponseWriter, *http.Request) bool
+	VerifyCredentials(ReqByCoord, http.ResponseWriter, *http.Request)
 }
 
 var ErrSessionExists error = errors.New("Session already exist")
-var ErrStateExists error = errors.New("State already exist")
-var ErrNoCredential error = errors.New("Login Failed")
 
 type SessionManager interface {
 	Module
-	NewSession(ReqByCoord, http.ResponseWriter, *http.Request)
-	ReadSession(ReqByCoord, http.ResponseWriter, *http.Request) bool
+	ReadSession(ReqByCoord, http.ResponseWriter, *http.Request)
 	UpdateSession(ReqByCoord, http.ResponseWriter, *http.Request)
-	EndSession(ReqByCoord, http.ResponseWriter, *http.Request)
 }
 
 // INTERFACES THAT MUST BE SATISFIED BY USER-DEVELOPER IN THEIR STATE MANAGER
@@ -39,7 +28,9 @@ type Factory interface {
 }
 
 type ReqByCoord interface {
-	AuthorizeUser(w http.ResponseWriter, r *http.Request) bool
-	InitState() error
-	DeleteState()
+	LogOut(w http.ResponseWriter, r *http.Request)
+	IsLoginAllowed(w http.ResponseWriter, r *http.Request) bool
+	OtherStateAction(w http.ResponseWriter, r *http.Request)
+	ChangeState(w http.ResponseWriter, r *http.Request)
+	IsUserAuthorized(w http.ResponseWriter, r *http.Request) bool
 }
