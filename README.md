@@ -53,9 +53,10 @@ OtherStateAction(w http.ResponseWriter, r *http.Request)
 // It must write a response body. `uwho` provides some obvious utility functions (see README.md
 // or utilities.go) that you can use.
 ChangeState(w http.ResponseWriter, r *http.Request)
-// IsUserAuthorized will be called after session is read, the user did not login or logout, and session is updated. 
-// It's your job to check the request and see if user is authorized. If true, user will continue to the wrapped 
-// handler, Coordinator.DesiredResource. If false, you must write a response body. Maybe redirect user to a login page?
+// IsUserAuthorized will be called after session is read, the user did not login or logout, and
+// session is updated. It's your job to check the request and see if user is authorized. If true,
+// user will continue to the wrapped handler, Coordinator.DesiredResource. If false, you must write
+// a response body. Maybe redirect user to a login page?
 IsUserAuthorized(w http.ResponseWriter, r *http.Request) bool
 ```
 
