@@ -68,30 +68,31 @@ IsUserAuthorized(w http.ResponseWriter, r *http.Request) bool
 
 Here is an example:
 ```go
-    // Set up the actual handles you want to serve
-	fileserver := http.NewServeMux()
-    fileserver.Handle("www.example.com", http.FileServer(http.Dir("/www/example.com/")))
+// Set up the actual handles you want to serve
+fileserver := http.NewServeMux()
+fileserver.Handle("www.example.com", http.FileServer(http.Dir("/www/example.com/")))
 
-    // Initialize uwho
-	authMux := uwho.New("/login", "/logout", &myStateObjectFactory{}) // (loginPath, logoutPath, type according to #3 above)
-	cookieSessions := usersessioncookie.New("", "/", "/some/path/to/a/private/key/)
-	cookieSessions.SetID("myID") // If you want to name your cookie, otherwise it's a random UUID
-	googleIdent := googlelogin.New("googleID")
-    
-    // Attach uwho to it's modules
-	authMux.AddIdentifier(googleIdent)
-	authMux.AttachSessionManager(cookieSessions)
-    
-    // Wrap the real handler in uwho
-	authMux.DesiredResource = fileserver
-    
-    // Serve uwho
-    serverHTTP := &http.Server{
-        Addr:    ":http",
-        Handler: authMux,
-    }
+// Initialize uwho
+ // (loginPath, logoutPath, type according to #3 above))
+authMux := uwho.New("/login", "/logout", &myStateObjectFactory{}
+cookieSessions := usersessioncookie.New("", "/", "/some/path/to/a/private/key/)
+cookieSessions.SetID("myID") // If you want to name your cookie, otherwise it's a random UUID
+googleIdent := googlelogin.New("googleID")
 
-    err := serverHTTP.ListenAndServe()
+// Attach uwho to it's modules
+authMux.AddIdentifier(googleIdent)
+authMux.AttachSessionManager(cookieSessions)
+
+// Wrap the real handler in uwho
+authMux.DesiredResource = fileserver
+
+// Serve uwho
+serverHTTP := &http.Server{
+    Addr:    ":http",
+    Handler: authMux,
+}
+
+err := serverHTTP.ListenAndServe()
 ```
 
 ### Utilities
