@@ -68,11 +68,12 @@ func (c *CookieSessionManager) UpdateSession(userStateCoord uwho.ReqByCoord, w h
 			t = time.Time{}
 		}
 		cookie := &http.Cookie{
-			Name:    c.id,
-			Value:   valueString,
-			Domain:  c.domain,
-			Path:    c.path,
-			Expires: t,
+			Name:     c.id,
+			Value:    valueString,
+			Domain:   c.domain,
+			SameSite: http.SameSiteNoneMode,
+			Path:     c.path,
+			Expires:  t,
 		}
 		defaultLogger.Debug("Cookie to set: " + cookie.String())
 		http.SetCookie(w, cookie)
