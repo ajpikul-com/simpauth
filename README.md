@@ -1,5 +1,9 @@
 # BETA IS OUT!
 
+**TODO:**
+* pull example
+* improve logging
+
 ## Basic Idea of uWHO
 
 uWHO will wrap your multiplexer and will not allow any request to pass unless it satisfies auth.
