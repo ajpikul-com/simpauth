@@ -11,7 +11,7 @@
 3. Choose login modules (google login, username password, email link, etc). 
 4. Add their methods to your `state` object.
 5. Choose session manager (usually `cookie`).
-6. Add it's method to your `state` object.
+6. Add its methods to your `state` object.
 7. Write a function that initializes your `state` object.
 
 TODO: see example at ____
