@@ -8,7 +8,7 @@ import (
 type coordinator struct {
 	identifiers     []Identifier
 	sessionManager  SessionManager
-	desiredResource http.Handler
+	DesiredResource http.Handler
 	loginEndpoint   *url.URL
 	logoutEndpoint  *url.URL
 	stateFactory    Factory
