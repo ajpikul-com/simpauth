@@ -4,7 +4,7 @@
 
 ## Basic Idea of uWHO
 
-`uwho.Coordinator` wraps `mux` with authentication/authorization/session management.
+`uwho.Coordinator` wraps `mux` with authentication, authorization, and session management.
 
 1. Write a `state` object for each connection.
 2. Write 5 required methods.
