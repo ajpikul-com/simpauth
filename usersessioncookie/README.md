@@ -1,5 +1,7 @@
 # usersessioncookie
 
+should add encryption option
+
 `usersessioncookie` takes a string, puts it in a cookie, and gives you back the string on read. It does no expiry or encryption, but it should.
 
 `New(domain string, path string, expiry time.Duration, key string)` to create it.
