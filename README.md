@@ -1,19 +1,18 @@
-# BETA IS OUT!
-
 **TODO:**
 * pull example
 * improve logging
 
 ## Basic Idea of uWHO
 
-uWHO will wrap your multiplexer and will not allow any request to pass unless it satisfies auth.
+`uwho.Coordinator` wraps `mux` with authentication/authorization/session management.
 
-1. You write a state object- it contains whatever user information you want. It is alive for only the connection, but you will store it in a session (keep reading).
-2. You write required methods for your state object. It must satisfy the interface for core module (`uwho`) and whatever modules you choose.
-3. You choose login modules (google login, username password, email link, etc). You add it's required methods to your state object.
-4. You choose session modules. Right now there is only one, it's a cookie manager, and it requires you to write two methods.
-5. You have to write a function that returns a new state object.
-6. You initialize the objects.
+1. Write a `state` object for each connection.
+2. Write 5 required methods.
+3. Choose login modules (google login, username password, email link, etc). 
+4. Add their methods to your `state` object.
+5. Choose session manager (usually `cookie`).
+6. Add it's method to your `state` object.
+7. Write a function that initializes your `state` object.
 
 TODO: see example at ____
 
