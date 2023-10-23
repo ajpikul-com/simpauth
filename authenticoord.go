@@ -48,6 +48,6 @@ func (c *coordinator) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	if userState.IsUserAuthorized(w, r) {
 		defaultLogger.Debug(r.URL.Path + ": We are freshly authorized")
-		c.desiredResource.ServeHTTP(w, r)
+		c.DesiredResource.ServeHTTP(w, r)
 	}
 }

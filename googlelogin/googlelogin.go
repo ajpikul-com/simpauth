@@ -57,9 +57,9 @@ func (g *GoogleLogin) VerifyCredentials(userStateCoord uwho.ReqByCoord, w http.R
 	}
 }
 
-func (g *GoogleLogin) DefaultLoginDiv(loginEndpoint string) string {
+func DefaultLoginDiv(loginEndpoint string, clientID string) string {
 	return `<div id="g_id_onload"
-		 data-client_id="` + g.ClientID + `"
+		 data-client_id="` + clientID + `"
 		 data-context="signin"
 		 data-ux_mode="popup"
 		 data-login_uri="` + loginEndpoint + `"
@@ -75,13 +75,13 @@ func (g *GoogleLogin) DefaultLoginDiv(loginEndpoint string) string {
 		 data-logo_alignment="left">
 </div>`
 }
-func (g *GoogleLogin) DefaultLoginPortal(loginEndpoint string) http.Handler {
+func DefaultLoginPortal(loginEndpoint string, clientID string) http.Handler {
 	return sutils.StringHandler{`<html>
 	<head>
 		<script src="https://accounts.google.com/gsi/client" async></script>
 	</head>
 	<body>
-		` + g.DefaultLoginDiv(loginEndpoint) + `
+		` + DefaultLoginDiv(loginEndpoint, clientID) + `
 	</body>
 </html>`}
 }
