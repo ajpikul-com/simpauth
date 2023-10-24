@@ -26,7 +26,7 @@ type cookieValue struct {
 	}
 */
 func (c *CookieSessionManager) ReadSession(userStateCoord uwho.ReqByCoord, w http.ResponseWriter, r *http.Request) {
-	defaultLogger.Debug("ReadSession called")
+	defaultLogger.Debug("ReadSession called for reading cookie:" + c.id)
 	cookie, err := r.Cookie(c.id)
 	if err != nil {
 		return
@@ -71,7 +71,7 @@ func (c *CookieSessionManager) UpdateSession(userStateCoord uwho.ReqByCoord, w h
 			Name:     c.id,
 			Value:    valueString,
 			Domain:   c.domain,
-			SameSite: http.SameSiteNoneMode,
+			SameSite: http.SameSiteStrictMode,
 			Path:     c.path,
 			Expires:  t,
 		}
