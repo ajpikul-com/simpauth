@@ -59,20 +59,19 @@ func (g *GoogleLogin) VerifyCredentials(userStateCoord uwho.ReqByCoord, w http.R
 
 func DefaultLoginDiv(loginEndpoint string, clientID string) string {
 	return `<div id="g_id_onload"
-		 data-client_id="` + clientID + `"
-		 data-context="signin"
-		 data-ux_mode="popup"
-		 data-login_uri="` + loginEndpoint + `"
-		 data-auto_prompt="false">
+	data-client_id="` + clientID + `"
+	data-context="signin"
+	data-ux_mode="popup"
+	data-login_uri="` + loginEndpoint + `"
+	data-auto_prompt="false"
 </div>
+
 <div class="g_id_signin"
-		 data-type="standard"
-		 data-shape="pill"
-		 data-theme="outline"
-		 data-text="signin_with"
-		 data-size="medium"
-		 data-locale="en-US"
-		 data-logo_alignment="left">
+	data-type="icon"
+	data-shape="circle"
+	data-theme="outline"
+	data-text="continue_with"
+	data-size="large"
 </div>`
 }
 
