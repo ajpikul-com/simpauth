@@ -1,6 +1,8 @@
 **TODO:**
-* pull example
+* pull and do example
 * improve logging
+* cookie structure doesn't need ID
+* cookie also shouldn't read file it should be config
 
 ## Basic Idea of uWHO
 
