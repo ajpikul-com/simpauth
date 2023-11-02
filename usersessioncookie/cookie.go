@@ -16,15 +16,8 @@ type cookieValue struct {
 	Sig         ssh.Signature
 }
 
-/*
-	func (value *cookieValue) MarshalJSON() ([]byte, error) {
-		return json.Marshal(value)
-	}
+// TODO: probably need cookie versions
 
-	func (value *cookieValue) UnmarshalJSON(data []byte) error {
-		return json.Unmarshal(data, value)
-	}
-*/
 func (c *CookieSessionManager) ReadSession(userStateCoord uwho.ReqByCoord, w http.ResponseWriter, r *http.Request) {
 	defaultLogger.Debug("ReadSession called for reading cookie:" + c.id)
 	cookie, err := r.Cookie(c.id)

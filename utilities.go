@@ -6,7 +6,7 @@ type RedirectHome string
 
 func (d *RedirectHome) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	defaultLogger.Debug("Redirecting")
-	http.Redirect(w, r, string(*d), 302)
+	http.Redirect(w, r, string(*d), 302) // TODO fix this
 }
 
 type ToReferrer string
