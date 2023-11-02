@@ -20,7 +20,7 @@ type cookieValue struct {
 
 func (c *CookieSessionManager) ReadSession(userStateCoord uwho.ReqByCoord, w http.ResponseWriter, r *http.Request) {
 	defaultLogger.Debug("ReadSession called for reading cookie:" + c.id)
-	cookie, err := r.Cookie(c.id)
+	cookie, err := r.Cookie(c.id) // TODO we should check this against the domain being set yesireebob
 	if err != nil {
 		return
 	}
