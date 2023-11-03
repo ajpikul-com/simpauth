@@ -18,4 +18,3 @@ node_modules/*
 gerbers.zip
 gerbers/
 *.lck
-dist/
