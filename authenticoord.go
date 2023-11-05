@@ -14,6 +14,13 @@ type coordinator struct {
 	stateFactory    Factory
 }
 
+func (c *coordinator) Clone(newResource http.Handler) *coordinator {
+	clone := new(coordinator)
+	*clone = *c
+	clone.DesiredResource = newResource
+	return clone
+}
+
 func (c *coordinator) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	defaultLogger.Debug("Serving HTTP from " + r.URL.Path)
 	userState := c.stateFactory.New()
