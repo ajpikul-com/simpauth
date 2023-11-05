@@ -2,7 +2,6 @@ package googlelogin
 
 import (
 	"net/http"
-	"regexp"
 
 	"google.golang.org/api/idtoken"
 
@@ -15,14 +14,12 @@ type ReqByIdent interface {
 }
 
 type GoogleLogin struct {
-	ClientID    string
-	OriginMatch *regexp.Regexp // TODO this could be a function
+	ClientID string
 }
 
-func New(clientID string, match string) *GoogleLogin {
+func New(clientID string) *GoogleLogin {
 	return &GoogleLogin{
-		ClientID:    clientID,
-		OriginMatch: regexp.MustCompile(match),
+		ClientID: clientID,
 	}
 }
 
@@ -33,17 +30,7 @@ func (g *GoogleLogin) TestInterface(stateManager uwho.ReqByCoord) {
 }
 
 func (g *GoogleLogin) VerifyCredentials(userStateCoord uwho.ReqByCoord, w http.ResponseWriter, r *http.Request) {
-	if r.Method == "OPTIONS" {
-		origin := r.Header.Get("Origin")
-		if g.OriginMatch.Match([]byte(origin)) {
-			w.Header().Set("Access-Control-Allow-Origin", origin)
-			w.Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT")
-			w.Header().Set("Vary", "Origin")
-			w.WriteHeader(http.StatusOK)
-			return
-		}
-		return // We set nothing explicitly
-	} else if r.Method == "POST" {
+	if r.Method == "POST" {
 		r.ParseMultipartForm(4096)
 		cookieCSRFValue, err := r.Cookie("g_csrf_token")
 		if err != nil {
