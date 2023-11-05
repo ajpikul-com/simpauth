@@ -14,11 +14,12 @@ type coordinator struct {
 	stateFactory    Factory
 }
 
-// The Clone function does not deep copy. It's only purpose is to allow you to use the same uwho coordinator with a different desired resource. You could just it's points to other objects.
+// The Clone function does not deep copy. It's only purpose is to allow you to use the same uwho coordinator with a different desired resource. None of the other members are accessable anyway.
 func (c *coordinator) Clone(newResource http.Handler) *coordinator {
 	clone := new(coordinator)
 	*clone = *c
 	clone.DesiredResource = newResource
+	// Interface function escaping me here
 	return clone
 }
 
