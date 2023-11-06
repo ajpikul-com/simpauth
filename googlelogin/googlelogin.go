@@ -1,6 +1,7 @@
 package googlelogin
 
 import (
+	"io/ioutil"
 	"net/http"
 
 	"google.golang.org/api/idtoken"
@@ -46,7 +47,7 @@ func (g *GoogleLogin) VerifyCredentials(userStateCoord uwho.ReqByCoord, w http.R
 		if ct == "application/x-www-form-urlencoded" {
 			token = r.Form["credential"][0]
 		} else if ct == "text/plain" {
-			token = r.Body
+			token = ioutil.ReadAll(r.Body)
 		}
 		payload, err := idtoken.Validate(r.Context(), token, "")
 		if err != nil {
