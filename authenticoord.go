@@ -30,9 +30,13 @@ func (c *Coordinator) Clone(newResource http.Handler) *Coordinator {
 }
 
 func (c *Coordinator) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	defaultLogger.Debug("Serving HTTP from " + r.URL.Path)
-	if c.optionOverride != nil && r.Method == "POST" {
+	defaultLogger.Debug("**")
+	defaultLogger.Debug("Coordinator start")
+	defaultLogger.Debug("Serving HTTP from " + r.URL.Path + " with method " + r.Method)
+	if c.optionOverride != nil && r.Method == "OPTIONS" {
+		defaultLogger.Debug("We're in option!")
 		if c.optionOverride(w, r) {
+			defaultLogger.Debug("Override requested we not continue")
 			return
 		}
 	}
@@ -48,6 +52,7 @@ func (c *Coordinator) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		userState.LogOut(w, r)
 		stateChange = true
 	} else if r.URL.Path == c.loginEndpoint.Path {
+		defaultLogger.Debug("Trying to login")
 		stateChange = true
 		for _, identifier := range c.identifiers {
 			if !userState.IsLoginAllowed(w, r) {
