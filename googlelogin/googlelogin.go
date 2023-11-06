@@ -32,19 +32,19 @@ func (g *GoogleLogin) TestInterface(stateManager uwho.ReqByCoord) {
 
 func (g *GoogleLogin) VerifyCredentials(userStateCoord uwho.ReqByCoord, w http.ResponseWriter, r *http.Request) {
 	if r.Method == "POST" {
-		r.ParseMultipartForm(4096)
-		cookieCSRFValue, err := r.Cookie("g_csrf_token")
-		if err != nil {
-			defaultLogger.Error(err.Error())
-			return
-		}
-		if cookieCSRFValue.Value != r.Form["g_csrf_token"][0] {
-			defaultLogger.Info("Under attack? csrf tokens didn't match")
-			return
-		}
 		ct := r.Header.Get("Content-Type")
 		token := ""
 		if ct == "application/x-www-form-urlencoded" {
+			r.ParseMultipartForm(4096)
+			cookieCSRFValue, err := r.Cookie("g_csrf_token") // Don't need with xhr I don't think?
+			if err != nil {
+				defaultLogger.Error(err.Error())
+				return
+			}
+			if cookieCSRFValue.Value != r.Form["g_csrf_token"][0] {
+				defaultLogger.Info("Under attack? csrf tokens didn't match")
+				return
+			}
 			token = r.Form["credential"][0]
 		} else if ct == "text/plain" {
 			temp, err := ioutil.ReadAll(r.Body)
