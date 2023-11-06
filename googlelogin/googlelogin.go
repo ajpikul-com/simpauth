@@ -47,7 +47,12 @@ func (g *GoogleLogin) VerifyCredentials(userStateCoord uwho.ReqByCoord, w http.R
 		if ct == "application/x-www-form-urlencoded" {
 			token = r.Form["credential"][0]
 		} else if ct == "text/plain" {
-			token = ioutil.ReadAll(r.Body)
+			temp, err := ioutil.ReadAll(r.Body)
+			if err != nil {
+				defaultLogger.Error(err.Error())
+				return
+			}
+			token = string(temp)
 		}
 		payload, err := idtoken.Validate(r.Context(), token, "")
 		if err != nil {
