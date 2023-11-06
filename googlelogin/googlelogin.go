@@ -41,21 +41,24 @@ func (g *GoogleLogin) VerifyCredentials(userStateCoord uwho.ReqByCoord, w http.R
 			defaultLogger.Info("Under attack? csrf tokens didn't match")
 			return
 		}
-
-		payload, err := idtoken.Validate(r.Context(), r.Form["credential"][0], "")
+		ct := r.Header.Get("Content-Type")
+		token := ""
+		if ct == "application/x-www-form-urlencoded" {
+			token = r.Form["credential"][0]
+		} else if ct == "text/plain" {
+			token = r.Body
+		}
+		payload, err := idtoken.Validate(r.Context(), token, "")
 		if err != nil {
 			defaultLogger.Error(err.Error())
 			return
 		}
-
 		userState, ok := userStateCoord.(ReqByIdent)
 		if !ok {
 			defaultLogger.Error("Interface assertion error")
 			return
 		}
 		userState.AcceptData(payload.Claims)
-	} else if r.Method == "PUT" {
-		// TODO PROCESS JAVASCRIPT HERE
 	}
 }
 
