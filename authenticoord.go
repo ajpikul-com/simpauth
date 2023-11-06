@@ -12,6 +12,12 @@ type Coordinator struct {
 	loginEndpoint   *url.URL
 	logoutEndpoint  *url.URL
 	stateFactory    Factory
+	optionOverride  func(w http.ResponseWriter, r *http.Request) bool
+}
+
+// Have your handler return true if you're done talking to the user
+func (c *Coordinator) OverrideOPTION(override func(w http.ResponseWriter, r *http.Request) bool) {
+	c.optionOverride = override
 }
 
 // The Clone function does not deep copy. It's only purpose is to allow you to use the same uwho coordinator with a different desired resource. None of the other members are accessable anyway.
@@ -25,6 +31,11 @@ func (c *Coordinator) Clone(newResource http.Handler) *Coordinator {
 
 func (c *Coordinator) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	defaultLogger.Debug("Serving HTTP from " + r.URL.Path)
+	if c.optionOverride != nil && r.Method == "POST" {
+		if c.optionOverride(w, r) {
+			return
+		}
+	}
 	userState := c.stateFactory.New()
 
 	// Read Session
