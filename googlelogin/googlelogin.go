@@ -34,7 +34,7 @@ func (g *GoogleLogin) VerifyCredentials(userStateCoord uwho.ReqByCoord, w http.R
 	if r.Method == "POST" {
 		ct := r.Header.Get("Content-Type")
 		token := ""
-		if r.URL.Query().Get("source") == "xhr" {
+		if r.URL.Query().Get("source") != "xhr" {
 			r.ParseMultipartForm(4096)
 			cookieCSRFValue, err := r.Cookie("g_csrf_token") // Don't need with xhr I don't think?
 			if err != nil {
