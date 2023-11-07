@@ -41,7 +41,7 @@ func (c *CookieSessionManager) ReadSession(userStateCoord uwho.ReqByCoord, w htt
 }
 
 // Factored out of UpdateSession so we can test it + generate value strings to test javascript
-func (c *CookieSessionManager) generateCookieValue(stateString string) (string, error) {
+func (c *CookieSessionManager) GenerateCookieValue(stateString string) (string, error) {
 	signature, _ := c.signer.Sign(rand.Reader, []byte(stateString))
 	value := &cookieValue{StateString: stateString, Sig: *signature}
 	valueBytes, err := json.Marshal(value)
@@ -60,7 +60,7 @@ func (c *CookieSessionManager) UpdateSession(userStateCoord uwho.ReqByCoord, w h
 	if userState, ok := userStateCoord.(ReqBySess); ok {
 		stateString, duration := userState.StateToString()
 		defaultLogger.Debug("CookieManager received cookie value string form user: " + stateString)
-		valueString, err := c.generateCookieValue(stateString)
+		valueString, err := c.GenerateCookieValue(stateString)
 		if err != nil {
 			defaultLogger.Error(err.Error())
 			return

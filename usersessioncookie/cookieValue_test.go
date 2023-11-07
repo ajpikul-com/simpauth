@@ -8,7 +8,7 @@ import (
 	"golang.org/x/crypto/ssh"
 )
 
-func Test_generateCookieValue(t *testing.T) {
+func Test_GenerateCookieValue(t *testing.T) {
 	privateKey, err := rsa.GenerateKey(rand.Reader, 2048)
 	if err != nil {
 		t.Error(err)
@@ -23,7 +23,7 @@ func Test_generateCookieValue(t *testing.T) {
 	}
 	manager := New("example.com", "/", signer)
 	testValue := "TestValue"
-	output, err := manager.generateCookieValue(testValue)
+	output, err := manager.GenerateCookieValue(testValue)
 	if err != nil {
 		t.Error(err)
 	}
