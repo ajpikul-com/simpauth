@@ -4,7 +4,7 @@ export type signature = {
   Rest: string | null;
 }
 export type cookie = {
-  StateString: string
+  StateString: string;
   Sig: signature;
 } 
 

@@ -20,8 +20,4 @@ export function decodeCookie(cookie) {
     const decoded = atob(cookie); // TODO handle error
     return JSON.parse(decoded);
 }
-export function getCookieAsAny(name) {
-    const obj = JSON.parse(JSON.parse(atob(getCookie(name))).StateString);
-    return obj;
-}
 //# sourceMappingURL=index.js.map

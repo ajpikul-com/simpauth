@@ -9,5 +9,4 @@ export type cookie = {
 };
 export declare function getCookie(name: string): string;
 export declare function decodeCookie(cookie: string): cookie | null;
-export declare function getCookieAsAny(name: string): any;
 //# sourceMappingURL=index.d.ts.map
