@@ -1,0 +1,11 @@
+{
+  "extends": "./tsconfig",
+  "exclude": ["src/"],
+  "include": ["test/"],
+  "compilerOptions": {
+    "module": "commonjs",
+    "rootDir": "test/",
+    "outDir": "dist-test/"
+  }
+}
+
