@@ -29,7 +29,7 @@ func (c *CookieSessionManager) ReadSession(userStateCoord uwho.ReqByCoord, w htt
 	defaultLogger.Debug("Readsession decoded string: " + string(valueBytes))
 	value := new(cookieValue)
 	json.Unmarshal(valueBytes, value)
-	err = c.private.PublicKey().Verify([]byte(value.StateString), &value.Sig)
+	err = c.signer.PublicKey().Verify([]byte(value.StateString), &value.Sig)
 	if err != nil {
 		defaultLogger.Debug(err.Error())
 		return
@@ -40,20 +40,29 @@ func (c *CookieSessionManager) ReadSession(userStateCoord uwho.ReqByCoord, w htt
 	}
 }
 
+// Factored out of UpdateSession so we can test it + generate value strings to test javascript
+func (c *CookieSessionManager) generateCookieValue(stateString string) (string, error) {
+	signature, _ := c.signer.Sign(rand.Reader, []byte(stateString))
+	value := &cookieValue{StateString: stateString, Sig: *signature}
+	valueBytes, err := json.Marshal(value)
+	defaultLogger.Debug("Signed Cookie: " + string(valueBytes))
+	// the whole value
+	valueString := base64.StdEncoding.EncodeToString(valueBytes)
+	if err != nil {
+		return "", err
+	}
+	defaultLogger.Debug("Cookie value will be: " + valueString)
+	return valueString, nil
+}
+
 func (c *CookieSessionManager) UpdateSession(userStateCoord uwho.ReqByCoord, w http.ResponseWriter, r *http.Request) {
 	defaultLogger.Debug("UpdateSession called")
 	if userState, ok := userStateCoord.(ReqBySess); ok {
 		stateString, duration := userState.StateToString()
 		defaultLogger.Debug("CookieManager received cookie value string form user: " + stateString)
-		signature, _ := c.private.Sign(rand.Reader, []byte(stateString))
-		value := &cookieValue{StateString: stateString, Sig: *signature}
-		valueBytes, err := json.Marshal(value)
-		defaultLogger.Debug("Signed Cookie: " + string(valueBytes))
-		// the whole value
-		valueString := base64.StdEncoding.EncodeToString(valueBytes)
-		defaultLogger.Debug("Cookie value will be: " + valueString)
+		valueString, err := c.generateCookieValue(stateString)
 		if err != nil {
-			defaultLogger.Error(err.Error()) // Is this ok
+			defaultLogger.Error(err.Error())
 			return
 		}
 		t := time.Now().Add(duration)

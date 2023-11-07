@@ -1,7 +1,6 @@
 package usersessioncookie
 
 import (
-	"os"
 	"time"
 
 	"github.com/ajpikul-com/uwho"
@@ -10,11 +9,11 @@ import (
 )
 
 type CookieSessionManager struct {
-	id      string
-	expiry  time.Duration
-	private ssh.Signer
-	domain  string
-	path    string
+	id     string
+	expiry time.Duration
+	signer ssh.Signer
+	domain string
+	path   string
 }
 
 func (c *CookieSessionManager) SetID(id string) {
@@ -27,20 +26,11 @@ func (c *CookieSessionManager) TestInterface(stateManager uwho.ReqByCoord) {
 	}
 }
 
-func New(domain string, path string, key string) *CookieSessionManager {
-	privateBytes, err := os.ReadFile(key)
-	if err != nil {
-		panic(err.Error())
-	}
-	private, err := ssh.ParsePrivateKey(privateBytes)
-	if err != nil {
-		panic(err.Error())
-	}
-
+func New(domain string, path string, signer ssh.Signer) *CookieSessionManager {
 	return &CookieSessionManager{
-		id:      uuid.New().String(),
-		private: private,
-		domain:  domain,
-		path:    path,
+		id:     uuid.New().String(),
+		signer: signer,
+		domain: domain,
+		path:   path,
 	}
 }
