@@ -1,7 +1,3 @@
-/* type {
-  StateString: string
-  Sig: {
-  } */
 // Add Validate Option TODO (can't unless we're using different public key)
 export function getCookie(name) {
     const value = `; ${document.cookie}`;
@@ -18,8 +14,11 @@ export function getCookie(name) {
     return "";
 }
 export function decodeCookie(cookie) {
+    if (cookie === "") {
+        return null;
+    }
     const decoded = atob(cookie); // TODO handle error
-    return JSON.parse(decoded); // TODO lets see what we get here
+    return JSON.parse(decoded);
 }
 export function getCookieAsAny(name) {
     const obj = JSON.parse(JSON.parse(atob(getCookie(name))).StateString);

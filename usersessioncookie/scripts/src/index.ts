@@ -1,7 +1,12 @@
-/* type {
+export type signature = {
+  Format: string;
+  Blob: string;
+  Rest: string | null;
+}
+export type cookie = {
   StateString: string
-  Sig: {
-  } */
+  Sig: signature;
+} 
 
 // Add Validate Option TODO (can't unless we're using different public key)
 
@@ -18,9 +23,12 @@ export function getCookie(name: string): string {
   return "";
 }
 
-export function decodeCookie(cookie: string): any {
-    const decoded: string = atob(cookie); // TODO handle error
-    return JSON.parse(decoded); // TODO lets see what we get here
+export function decodeCookie(cookie: string): cookie | null {
+  if (cookie === "") {
+    return null;
+  }
+  const decoded: string = atob(cookie); // TODO handle error
+  return JSON.parse(decoded) as cookie;
 }
 
 export function getCookieAsAny(name: string): any {
