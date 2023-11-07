@@ -30,8 +30,3 @@ export function decodeCookie(cookie: string): cookie | null {
   const decoded: string = atob(cookie); // TODO handle error
   return JSON.parse(decoded) as cookie;
 }
-
-export function getCookieAsAny(name: string): any {
-  const obj = JSON.parse(JSON.parse(atob(getCookie(name))).StateString) as any;
-  return obj
-}
