@@ -1,6 +1,6 @@
 {
   "name": "@grupopikul/uwho-usc",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "description": "Tools for working with uwho/usersessioncookie",
   "main": "dist/index.js",
   "scripts": {
