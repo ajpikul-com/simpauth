@@ -24,9 +24,10 @@ export function getCookie(name: string): string {
 }
 
 export function decodeCookie(cookie: string): cookie | null {
-  if (cookie === "") {
+  const cookieVal: string = getCookie(cookie)
+  if (cookieVal === "") {
     return null;
   }
-  const decoded: string = atob(cookie); // TODO handle error
+  const decoded: string = atob(cookieVal); // TODO handle error
   return JSON.parse(decoded) as cookie;
 }
